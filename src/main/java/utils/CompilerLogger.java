@@ -4,8 +4,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class CompilerLogger {
-	private static final Logger log = LoggerFactory.getLogger(CompilerLogger.class);
+//	private static final Logger log = LoggerFactory.getLogger(CompilerLogger.class);
 	public static void print(String value) {
-		log.info(value);
+
+		System.err.println(value);
 	}
 }

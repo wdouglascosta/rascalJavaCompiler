@@ -1,32 +1,20 @@
 package core;
 
-public class LexerToken {
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
+import tipos.Comando;
+import tipos.TipoCmd;
+
+@Getter
+@Setter
+@AllArgsConstructor
+public class LexerToken implements Comando {
     private String val;
     private Integer column;
 
-    public LexerToken(String val, Integer column) {
+    public TipoCmd getTipo() {
 
-        this.val = val;
-        this.column = column;
-    }
-
-    public String getVal() {
-
-        return val;
-    }
-
-    public void setVal(String val) {
-
-        this.val = val;
-    }
-
-    public Integer getColumn() {
-
-        return column;
-    }
-
-    public void setColumn(Integer column) {
-
-        this.column = column;
+        return TipoCmd.FINAL;
     }
 }

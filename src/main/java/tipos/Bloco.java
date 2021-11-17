@@ -12,5 +12,5 @@ import lombok.Setter;
 public class Bloco {
     private List<DecVar> decVar;
     private Object decSub;
-    private Object cmdComp;
+    private List<Comando> cmdComp;
 }

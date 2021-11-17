@@ -17,7 +17,7 @@ import core.*;
 
 %{
 
-   StringBuffer string = new StringBuffer();
+StringBuffer string = new StringBuffer();
 
 private Symbol symbol(int type) {
 	return new utils.RascalSymbol(type, yyline+1, yycolumn+1);
@@ -103,6 +103,6 @@ WhiteSpace     = {LineTerminator} | [ \t\f]
     ":="          { return symbol(sym.T_ATRIBUICAO); }
     ":"           { return symbol(sym.T_DOIS_PONTOS); }
 
-    {IntegerNumber}                 { return symbol(sym.T_NUM, new Integer(yytext())); }
+    {IntegerNumber}                 { return symbol(sym.T_NUM, createToken(yytext(), yycolumn)); }
 
 }

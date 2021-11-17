@@ -417,7 +417,7 @@ public class Lexico implements java_cup.runtime.Scanner {
 
   /* user code: */
 
-   StringBuffer string = new StringBuffer();
+StringBuffer string = new StringBuffer();
 
 private Symbol symbol(int type) {
 	return new utils.RascalSymbol(type, yyline+1, yycolumn+1);
@@ -826,7 +826,7 @@ private LexerToken createToken(String val, int start) {
             }
           case 40: break;
           case 3: 
-            { return symbol(sym.T_NUM, new Integer(yytext()));
+            { return symbol(sym.T_NUM, createToken(yytext(), yycolumn));
             }
           case 41: break;
           case 4: 
