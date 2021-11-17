@@ -1,0 +1,9 @@
+program decl_variaveis;
+
+  var x, y, z: integer;
+      a,b,c: boolean;
+      w: integer;
+
+begin
+
+end.

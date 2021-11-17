@@ -2,12 +2,17 @@ package generatedSources;
 import java_cup.runtime.*;
 import utils.RascalSymbol;
 import generatedSources.sym;
+import utils.*;
+import tipos.*;
+import core.*;
 
 %%
 
 %public
 %class Lexico
 %unicode
+%line
+%column
 %cup
 
 %{
@@ -21,21 +26,24 @@ private Symbol symbol(int type) {
 private Symbol symbol(int type, Object value) {
 	return new utils.RascalSymbol(type, yyline+1, yycolumn+1, value);
 }
+
+private LexerToken createToken(String val, int start) {
+    LexerToken tk = new LexerToken(val, start);
+    return tk;
+}
   
 %}
 
 /* Comments */
-startComment = \{ 
-endComment = \}
+startComment = \/\*
+endComment = \*\/
 contentComment= [^}]*
 Comment = {startComment}{contentComment}{endComment}
+CommentLine = [^\/\/[^\n\r]+(?:[\n\r]|\*\))]
 
 /* Integer  */
 DecimalLiteral 	= 0 | [1-9][0-9]*
 IntegerNumber 	= {DecimalLiteral}
-
-/*String*/
-String = "'"[^\n\r\']+"'"
 
 UnicodeLetter  = [:letter:]
 UnicodeDigit   = [:digit:]
@@ -43,8 +51,6 @@ Letter         = {UnicodeLetter}|"_"
 
 /* Identifiers */
 Identifier     = {Letter}({Letter} | {UnicodeDigit})*
-Number = {IntegerNumber}
-
 
 /* White spaces*/
 LineTerminator = \r|\n|\r\n
@@ -53,15 +59,12 @@ WhiteSpace     = {LineTerminator} | [ \t\f]
 %%
 
 <YYINITIAL> {
-    /* White spaces */
     {WhiteSpace}				    { /*Ignore*/ }
 
-    /*Comments*/
     {Comment}						{ /*Ignore*/ }
+    {CommentLine}				    { /*Ignore*/ }
 
-	/* Reserved Words */
-
-    "program"     { return symbol(sym.T_PROGRAM); }
+    "program"     { return symbol(sym.T_PROGRAM, createToken(yytext(), yycolumn)); }
     "var"         { return symbol(sym.T_VAR); }
     "procedure"   { return symbol(sym.T_PROCEDURE); }
     "function"    { return symbol(sym.T_FUNCTION); }
@@ -80,17 +83,8 @@ WhiteSpace     = {LineTerminator} | [ \t\f]
     "or"          { return symbol(sym.T_OR); }
     "not"         { return symbol(sym.T_NOT); }
     "div"         { return symbol(sym.T_DIV); }
-    "boolean"     { return symbol(sym.T_BOOL); }
 
-
-    /* Booleans */
-    "true"                     	 	{ return symbol(sym.BOOLEAN_LITERAL, new Boolean(true)); }
-    "false"                         { return symbol(sym.BOOLEAN_LITERAL, new Boolean(false)); }
-
-	/* Other */
-
-    /* Identifier*/
-    {Identifier} 					{ return symbol(sym.T_IDENT, yytext());}
+    {Identifier} 					{ return symbol(sym.T_IDENT, createToken(yytext(), yycolumn));}
 
     "("           { return symbol(sym.T_ABRE_PARENTESES); }
     ")"           { return symbol(sym.T_FECHA_PARENTESES); }
@@ -109,9 +103,6 @@ WhiteSpace     = {LineTerminator} | [ \t\f]
     ":="          { return symbol(sym.T_ATRIBUICAO); }
     ":"           { return symbol(sym.T_DOIS_PONTOS); }
 
-    /* String literal */
-
-    /* Number literal */
     {IntegerNumber}                 { return symbol(sym.T_NUM, new Integer(yytext())); }
 
 }

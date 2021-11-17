@@ -1,9 +1,14 @@
 import utils.*;
+import tipos.*;
+import core.*;
 import java_cup.runtime.Symbol;
 import generatedSources.sym;
+import java.util.List;
 
 
 parser code  {:
+
+private NodeFactory nodeFactory = new NodeFactory();
 
  public void report_error(String message, Object info){
    StringBuffer m = new StringBuffer("Error: " + message + "\n");
@@ -15,9 +20,9 @@ parser code  {:
    throw new RuntimeException("Fatal Syntax Error");
  }
  
- public void syntax_error(Symbol s){
-    System.out.println("compiler has detected a syntax error at line " + s.left 
-        + " column " + s.right + "\n");
+ public void syntax_error(RascalSymbol s){
+    CompilerLogger.print("compiler has detected a syntax error at line " + s.getLine()
+        + " column " + s.getColumn() + "\n");
 }
 
 :};
@@ -61,51 +66,52 @@ terminal T_MENOR_IGUAL;
 terminal T_INT;
 terminal T_BOOL;
 terminal T_NUM;
-terminal T_IDENT;
+terminal LexerToken T_IDENT;
 
 /* NON TERMINAL */
-non terminal programa;
+non terminal Bloco programa;
 non terminal secao_declara_subs;
 non terminal comando_composto;
-non terminal bloco;
-non terminal secao_declara_vars;
-non terminal lista_declara_vars;
-non terminal declara_vars;
-non terminal lista_ident;
-non terminal tipo;
+non terminal Bloco bloco;
+non terminal List<DecVar> secao_declara_vars;
+non terminal List<TpDecVar> lista_declara_vars;
+non terminal TpDecVar declara_vars;
+non terminal List<LexerToken> lista_ident;
+non terminal LexerToken tipo;
+non terminal comandos;
 
 
 start with programa;
 
 programa ::=
-	T_PROGRAM T_IDENT T_PONTO_E_VIRGULA bloco T_PONTO 		{: CompilerLogger.print("Program definition"); :}
+	T_PROGRAM T_IDENT T_PONTO_E_VIRGULA bloco:p4 T_PONTO 		{: RESULT = p4 ; CompilerLogger.print("Program definition"); :}
 ;
 
 bloco ::=
-    secao_declara_vars secao_declara_subs comando_composto {: :}
+    secao_declara_vars:p1 secao_declara_subs:p2 comando_composto:p3 {: RESULT = nodeFactory.buildBloco(p1, null, null);  :}
 ;
 
 secao_declara_vars ::=
     |
-    |T_VAR lista_declara_vars    {: :}
+    |T_VAR lista_declara_vars:p2    {: RESULT = nodeFactory.buildListDecVar(p2); :}
 ;
 
 lista_declara_vars ::=
-    |declara_vars lista_declara_vars    {: :}
-    |declara_vars                       {: :}
+    |lista_declara_vars:p1 declara_vars:p2      {: RESULT = nodeFactory.buildListTpDecVar(p1, p2); :}
+    |declara_vars:p1                            {: RESULT = nodeFactory.buildListTpDecVar(null, p1); :}
 ;
 
 declara_vars ::=
-    |lista_ident T_DOIS_PONTOS tipo T_PONTO_E_VIRGULA {: :}
+    |lista_ident:p1 T_DOIS_PONTOS tipo:p3 T_PONTO_E_VIRGULA {: RESULT = nodeFactory.buildTpDecVar(p1, p3); :}
 ;
 
 lista_ident ::=
-    |lista_ident T_VIRGULA T_IDENT {: :}
-    |T_IDENT {: :}
+    |lista_ident:p1 T_VIRGULA T_IDENT:p3 {: RESULT = nodeFactory.buildIdentList(p1, p3);:}
+    |T_IDENT:p1 {: RESULT = nodeFactory.buildIdentList(null, p1); :}
 ;
 
 tipo ::=
-    T_IDENT {: :}
+    T_IDENT:p1 {: RESULT = p1; :}
 ;
 
 
@@ -114,7 +120,10 @@ secao_declara_subs ::=
 ;
 
 comando_composto ::=
+    T_BEGIN comandos T_END
+;
 
+comandos ::=
 ;
 
 
