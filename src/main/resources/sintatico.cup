@@ -162,20 +162,19 @@ lstParams ::=
 
 paramFunc ::=
     | cmdExpArit:p1     {: RESULT = p1; :}
-    | cmdChamaFunc:p1   {: RESULT = p1; :}
     | T_IDENT:p1        {: RESULT = p1; :}
     | T_NUM:p1          {: RESULT = p1; :}
 ;
 
 cmdExpArit ::=
-    | comando:p1 T_MAIS cmdExpArit:p3                {: RESULT = factory.buildExpArit(p1, p3, Terminal.T_MAIS); :}
-    | comando:p1 T_MAIS comando:p3 T_PONTO_E_VIRGULA {: RESULT = factory.buildExpArit(p1, p3, Terminal.T_MAIS); :}
-    | comando:p1 T_MENOS cmdExpArit:p3                {: RESULT = factory.buildExpArit(p1, p3, Terminal.T_MENOS); :}
-    | comando:p1 T_MENOS comando:p3 T_PONTO_E_VIRGULA {: RESULT = factory.buildExpArit(p1, p3, Terminal.T_MENOS); :}
+    | comando:p1 T_MAIS cmdExpArit:p3                         {: RESULT = factory.buildExpArit(p1, p3, Terminal.T_MAIS); :}
+    | comando:p1 T_MAIS comando:p3                            {: RESULT = factory.buildExpArit(p1, p3, Terminal.T_MAIS); :}
+    | comando:p1 T_MENOS cmdExpArit:p3                        {: RESULT = factory.buildExpArit(p1, p3, Terminal.T_MENOS); :}
+    | comando:p1 T_MENOS comando:p3                           {: RESULT = factory.buildExpArit(p1, p3, Terminal.T_MENOS); :}
     | comando:p1 T_MULTIPLICACAO cmdExpArit:p3                {: RESULT = factory.buildExpArit(p1, p3, Terminal.T_MULTIPLICACAO); :}
-    | comando:p1 T_MULTIPLICACAO comando:p3 T_PONTO_E_VIRGULA {: RESULT = factory.buildExpArit(p1, p3, Terminal.T_MULTIPLICACAO); :}
-    | comando:p1 T_DIV cmdExpArit:p3                {: RESULT = factory.buildExpArit(p1, p3, Terminal.T_DIV); :}
-    | comando:p1 T_DIV comando:p3 T_PONTO_E_VIRGULA {: RESULT = factory.buildExpArit(p1, p3, Terminal.T_DIV); :}
+    | comando:p1 T_MULTIPLICACAO comando:p3                   {: RESULT = factory.buildExpArit(p1, p3, Terminal.T_MULTIPLICACAO); :}
+    | comando:p1 T_DIV cmdExpArit:p3                          {: RESULT = factory.buildExpArit(p1, p3, Terminal.T_DIV); :}
+    | comando:p1 T_DIV comando:p3                             {: RESULT = factory.buildExpArit(p1, p3, Terminal.T_DIV); :}
 ;
 
 cmdAtrib ::=

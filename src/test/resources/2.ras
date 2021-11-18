@@ -3,6 +3,7 @@ program atribuicao;
   var x, y: integer;
 
 begin
-
-  write(x + 1, y);
+  y := 8 + 10 div 2;
+  x := 2 * y;
+  write(x + 1, y - 2);
 end.
