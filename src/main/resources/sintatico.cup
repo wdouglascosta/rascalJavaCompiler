@@ -8,7 +8,7 @@ import java.util.List;
 
 parser code  {:
 
-private NodeFactory nodeFactory = new NodeFactory();
+private NodeFactory factory = new NodeFactory();
 
 public void report_error(String message, Object info){
 
@@ -92,6 +92,9 @@ non terminal List<Comando> comandos;
 non terminal Comando comando;
 non terminal Comando cmdExpArit;
 non terminal Comando cmdAtrib;
+non terminal Comando cmdChamaFunc;
+non terminal Comando paramFunc;
+non terminal List<Comando> lstParams;
 
 
 start with programa;
@@ -101,26 +104,26 @@ programa ::=
 ;
 
 bloco ::=
-    secao_declara_vars:p1 secao_declara_subs:p2 comando_composto:p3 {: RESULT = nodeFactory.buildBloco(p1, null, p3);  :}
+    secao_declara_vars:p1 secao_declara_subs:p2 comando_composto:p3 {: RESULT = factory.buildBloco(p1, null, p3);  :}
 ;
 
 secao_declara_vars ::=
     |
-    |T_VAR lista_declara_vars:p2    {: RESULT = nodeFactory.buildListDecVar(p2); :}
+    |T_VAR lista_declara_vars:p2    {: RESULT = factory.buildListDecVar(p2); :}
 ;
 
 lista_declara_vars ::=
-    |lista_declara_vars:p1 declara_vars:p2      {: RESULT = nodeFactory.buildListTpDecVar(p1, p2); :}
-    |declara_vars:p1                            {: RESULT = nodeFactory.buildListTpDecVar(null, p1); :}
+    |lista_declara_vars:p1 declara_vars:p2      {: RESULT = factory.buildListTpDecVar(p1, p2); :}
+    |declara_vars:p1                            {: RESULT = factory.buildListTpDecVar(null, p1); :}
 ;
 
 declara_vars ::=
-    |lista_ident:p1 T_DOIS_PONTOS tipo:p3 T_PONTO_E_VIRGULA {: RESULT = nodeFactory.buildTpDecVar(p1, p3); :}
+    |lista_ident:p1 T_DOIS_PONTOS tipo:p3 T_PONTO_E_VIRGULA {: RESULT = factory.buildTpDecVar(p1, p3); :}
 ;
 
 lista_ident ::=
-    |lista_ident:p1 T_VIRGULA T_IDENT:p3 {: RESULT = nodeFactory.buildIdentList(p1, p3);:}
-    |T_IDENT:p1 {: RESULT = nodeFactory.buildIdentList(null, p1); :}
+    |lista_ident:p1 T_VIRGULA T_IDENT:p3 {: RESULT = factory.buildIdentList(p1, p3);:}
+    |T_IDENT:p1 {: RESULT = factory.buildIdentList(null, p1); :}
 ;
 
 tipo ::=
@@ -136,23 +139,48 @@ comando_composto ::=
 ;
 
 comandos ::=
-    | comandos:p1 comando:p2       {: RESULT = nodeFactory.buildLstComandos(p1, p2); :}
-    | comando:p1                   {: RESULT = nodeFactory.buildLstComandos(null, p1); :}
+    | comandos:p1 comando:p2       {: RESULT = factory.buildLstComandos(p1, p2); :}
+    | comando:p1                   {: RESULT = factory.buildLstComandos(null, p1); :}
 ;
 
 comando ::=
     | cmdExpArit:p1     {: RESULT = p1; :}
     | cmdAtrib:p1       {: RESULT = p1; :}
+    | cmdChamaFunc:p1   {: RESULT = p1; :}
+    | T_IDENT:p1        {: RESULT = p1; :}
+    | T_NUM:p1          {: RESULT = p1; :}
+;
+
+cmdChamaFunc ::=
+    T_IDENT:p1 T_ABRE_PARENTESES lstParams:p3 T_FECHA_PARENTESES T_PONTO_E_VIRGULA {: RESULT = factory.buildChamaFunc(p1, p3); :}
+;
+
+lstParams ::=
+    | lstParams:p1 T_VIRGULA paramFunc:p3   {: RESULT = factory.buildLstComandos(p1, p3); :}
+    | paramFunc:p1                          {: RESULT = factory.buildLstComandos(null, p1); :}
+;
+
+paramFunc ::=
+    | cmdExpArit:p1     {: RESULT = p1; :}
+    | cmdChamaFunc:p1   {: RESULT = p1; :}
     | T_IDENT:p1        {: RESULT = p1; :}
     | T_NUM:p1          {: RESULT = p1; :}
 ;
 
 cmdExpArit ::=
-    comando:p1 T_MAIS comando:p3 T_PONTO_E_VIRGULA {: RESULT = nodeFactory.buildExpArit(p1, p3, Terminal.T_MAIS); :}
+    | comando:p1 T_MAIS cmdExpArit:p3                {: RESULT = factory.buildExpArit(p1, p3, Terminal.T_MAIS); :}
+    | comando:p1 T_MAIS comando:p3 T_PONTO_E_VIRGULA {: RESULT = factory.buildExpArit(p1, p3, Terminal.T_MAIS); :}
+    | comando:p1 T_MENOS cmdExpArit:p3                {: RESULT = factory.buildExpArit(p1, p3, Terminal.T_MENOS); :}
+    | comando:p1 T_MENOS comando:p3 T_PONTO_E_VIRGULA {: RESULT = factory.buildExpArit(p1, p3, Terminal.T_MENOS); :}
+    | comando:p1 T_MULTIPLICACAO cmdExpArit:p3                {: RESULT = factory.buildExpArit(p1, p3, Terminal.T_MULTIPLICACAO); :}
+    | comando:p1 T_MULTIPLICACAO comando:p3 T_PONTO_E_VIRGULA {: RESULT = factory.buildExpArit(p1, p3, Terminal.T_MULTIPLICACAO); :}
+    | comando:p1 T_DIV cmdExpArit:p3                {: RESULT = factory.buildExpArit(p1, p3, Terminal.T_DIV); :}
+    | comando:p1 T_DIV comando:p3 T_PONTO_E_VIRGULA {: RESULT = factory.buildExpArit(p1, p3, Terminal.T_DIV); :}
 ;
 
 cmdAtrib ::=
-    T_IDENT:p1 T_ATRIBUICAO comando:p3 T_PONTO_E_VIRGULA {: RESULT = nodeFactory.buildCmdAtrib(p1, p3); :}
+    | T_IDENT:p1 T_ATRIBUICAO comando:p3                    {: RESULT = factory.buildCmdAtrib(p1, p3); :}
+    | T_IDENT:p1 T_ATRIBUICAO comando:p3 T_PONTO_E_VIRGULA  {: RESULT = factory.buildCmdAtrib(p1, p3); :}
 ;
 
 

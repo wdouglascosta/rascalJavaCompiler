@@ -1,10 +1,8 @@
-program decl_variaveis;
+program atribuicao;
 
-  var x, y, z: integer;
-      a,b,c: boolean;
-      w: integer;
+  var x, y: integer;
 
 begin
-z + 12 + y;
-x := 66;
+
+  write(x + 1, y);
 end.

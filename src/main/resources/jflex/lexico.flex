@@ -27,8 +27,8 @@ private Symbol symbol(int type, Object value) {
 	return new utils.RascalSymbol(type, yyline+1, yycolumn+1, value);
 }
 
-private LexerToken createToken(String val, int start) {
-    LexerToken tk = new LexerToken(val, start);
+private LexerToken createToken(String val) {
+    LexerToken tk = new LexerToken(val, yyline+1, yycolumn+1);
     return tk;
 }
   
@@ -64,7 +64,7 @@ WhiteSpace     = {LineTerminator} | [ \t\f]
     {Comment}						{ /*Ignore*/ }
     {CommentLine}				    { /*Ignore*/ }
 
-    "program"     { return symbol(sym.T_PROGRAM, createToken(yytext(), yycolumn)); }
+    "program"     { return symbol(sym.T_PROGRAM, createToken(yytext())); }
     "var"         { return symbol(sym.T_VAR); }
     "procedure"   { return symbol(sym.T_PROCEDURE); }
     "function"    { return symbol(sym.T_FUNCTION); }
@@ -77,14 +77,12 @@ WhiteSpace     = {LineTerminator} | [ \t\f]
     "else"        { return symbol(sym.T_ELSE); }
     "while"       { return symbol(sym.T_WHILE); }
     "do"          { return symbol(sym.T_DO); }
-    "read"        { return symbol(sym.T_READ); }
-    "write"       { return symbol(sym.T_WRITE); }
     "and"         { return symbol(sym.T_AND); }
     "or"          { return symbol(sym.T_OR); }
     "not"         { return symbol(sym.T_NOT); }
     "div"         { return symbol(sym.T_DIV); }
 
-    {Identifier} 					{ return symbol(sym.T_IDENT, createToken(yytext(), yycolumn));}
+    {Identifier} 					{ return symbol(sym.T_IDENT, createToken(yytext()));}
 
     "("           { return symbol(sym.T_ABRE_PARENTESES); }
     ")"           { return symbol(sym.T_FECHA_PARENTESES); }
@@ -103,6 +101,6 @@ WhiteSpace     = {LineTerminator} | [ \t\f]
     ":="          { return symbol(sym.T_ATRIBUICAO); }
     ":"           { return symbol(sym.T_DOIS_PONTOS); }
 
-    {IntegerNumber}                 { return symbol(sym.T_NUM, createToken(yytext(), yycolumn)); }
+    {IntegerNumber}                 { return symbol(sym.T_NUM, createToken(yytext())); }
 
 }

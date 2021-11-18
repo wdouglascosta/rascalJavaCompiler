@@ -11,6 +11,7 @@ import tipos.TipoCmd;
 @AllArgsConstructor
 public class LexerToken implements Comando {
     private String val;
+    private Integer line;
     private Integer column;
 
     public TipoCmd getTipo() {

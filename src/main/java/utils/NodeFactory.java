@@ -7,6 +7,7 @@ import core.LexerToken;
 import core.Terminal;
 import tipos.Bloco;
 import tipos.CmdAtrib;
+import tipos.CmdChamaFunc;
 import tipos.CmdExpArit;
 import tipos.Comando;
 import tipos.DecVar;
@@ -65,4 +66,9 @@ public class NodeFactory {
         list.add(cmd);
         return list;
     }
+
+    public CmdChamaFunc buildChamaFunc(LexerToken nomeFunc, List<Comando> params){
+        return new CmdChamaFunc(params, nomeFunc);
+    }
+
 }
