@@ -2,7 +2,7 @@ package tipos;
 
 public enum TipoCmd {
     ATRIBUICAO,
-    OP_BINARIA,
+    EXP_ARIT,
     FINAL,
     CHAMADA_FUNC;
 }

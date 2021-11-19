@@ -1,0 +1,15 @@
+program atribuicao;
+
+  var x, y: integer;
+     will: boolean;
+     mateus: long;
+     nomeLongoParaVariavel: real;
+     y : integer;
+     asd, y : boolean;
+
+
+begin
+  y := 8 + 10 div 2;
+  x := 2 * y;
+  write(x + 1, y - 2);
+end.

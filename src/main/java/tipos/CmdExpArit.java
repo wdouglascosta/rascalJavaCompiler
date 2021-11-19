@@ -18,6 +18,6 @@ public class CmdExpArit implements Comando {
 
     public TipoCmd getTipo() {
 
-        return TipoCmd.OP_BINARIA;
+        return TipoCmd.EXP_ARIT;
     }
 }

@@ -1,9 +1,11 @@
 program atribuicao;
 
   var x, y: integer;
+    a : boolean;
 
 begin
+  2 + 3 + a
   y := 8 + 10 div 2;
-  x := 2 * y;
+  x := 2 * a;
   write(x + 1, y - 2);
 end.
