@@ -7,6 +7,8 @@ import java.util.Map;
 import java.util.Set;
 
 import tipos.Bloco;
+import tipos.CmdAtrib;
+import tipos.CmdChamaFunc;
 import tipos.CmdExpArit;
 import tipos.Comando;
 import tipos.DecVar;
@@ -15,6 +17,8 @@ import utils.ErroSemanticoException;
 
 public class Semantico {
 
+    private static final String WRITE_FUNC = "write";
+    private static final String READ_FUNC = "read";
     Map<String, VarType> certifiedVars = new HashMap<String, VarType>();
     private int errorCounter = 0;
 
@@ -47,42 +51,89 @@ public class Semantico {
                     break;
 
                 case ATRIBUICAO:
-                    validateAtribuicao(cmd);
+                    validateAtribuicao((CmdAtrib) cmd);
                     break;
+                case CHAMADA_FUNC:
+                    validateChamaFunc((CmdChamaFunc) cmd);
 
             }
         }
 
     }
 
-    private void validateAtribuicao(Comando cmd) {
+    private void validateChamaFunc(CmdChamaFunc cmd) {
 
-        System.out.println("validando atribuição");
+        if (cmd.getNomeFunc().getVal().equals(WRITE_FUNC) || cmd.getNomeFunc().getVal().equals(READ_FUNC)) {
+            List<Comando> params = cmd.getParams();
+            for (Comando param : params) {
+                switch (param.getTipo()) {
+                    case EXP_ARIT:
+                        validateExpArit((CmdExpArit) param);
+                        break;
+                    case FINAL:
+                        LexerToken finalToken = (LexerToken) param;
+                        if (!isAnInteger(finalToken)) {
+                            checkIntVar(finalToken);
+                        }
+                        break;
+                }
+
+            }
+        }
+
+    }
+
+    private void validateAtribuicao(CmdAtrib cmd) {
+
+        LexerToken variavel = cmd.getVariavel();
+//        if(isAnInteger(variavel)){
+//            System.err.println("'" + variavel.getVal() +"' Não é uma váriável válida");
+//            printLinha(variavel);
+//            errorCounter++;
+//        }
+        checkIntVar(variavel);
+        Comando expressao = cmd.getExpressao();
+
+        if (expressao.getTipo() == TipoCmd.EXP_ARIT) {
+
+            validateExpArit((CmdExpArit) expressao);
+        }
 
     }
 
     private void validateExpArit(CmdExpArit cmd) {
 
-        checkTypeVar((LexerToken) cmd.getEsq());
+        if (!isAnInteger((LexerToken) cmd.getEsq())) {
+            checkIntVar((LexerToken) cmd.getEsq());
+        }
 
         if (cmd.getDir().getTipo() != TipoCmd.FINAL) {
             validateExpArit((CmdExpArit) cmd.getDir());
         } else {
-            checkTypeVar((LexerToken) cmd.getDir());
+            if (!isAnInteger((LexerToken) cmd.getDir())) {
+                checkIntVar((LexerToken) cmd.getDir());
+            }
         }
 
     }
 
-    private void checkTypeVar(LexerToken token) {
+    private Boolean isAnInteger(LexerToken var) {
 
         try {
-            Integer.valueOf(token.getVal());
+            Integer.valueOf(var.getVal());
+            return true;
         } catch (NumberFormatException nfe) {
+            return false;
+        }
 
-            if (checkVarExists(token) && certifiedVars.get(token.getVal()) != VarType.INTEGER) {
-                System.err.println("A variavel '" + token.getVal() + "' não aceita operações aritméticas");
-                printLinha(token);
-            }
+    }
+
+    private void checkIntVar(LexerToken token) {
+
+        if (checkVarExists(token) && certifiedVars.get(token.getVal()) != VarType.INTEGER) {
+            System.err.println("A variavel '" + token.getVal() + "' não aceita operações aritméticas");
+            printLinha(token);
+            errorCounter++;
         }
     }
 

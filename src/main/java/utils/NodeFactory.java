@@ -11,7 +11,6 @@ import tipos.CmdChamaFunc;
 import tipos.CmdExpArit;
 import tipos.Comando;
 import tipos.DecVar;
-import tipos.TipoCmd;
 import tipos.TpDecVar;
 
 public class NodeFactory {

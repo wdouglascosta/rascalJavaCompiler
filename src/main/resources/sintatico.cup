@@ -94,13 +94,14 @@ non terminal Comando cmdExpArit;
 non terminal Comando cmdAtrib;
 non terminal Comando cmdChamaFunc;
 non terminal Comando paramFunc;
+non terminal Comando paramArit;
 non terminal List<Comando> lstParams;
 
 
 start with programa;
 
 programa ::=
-	T_PROGRAM T_IDENT T_PONTO_E_VIRGULA bloco:p4 T_PONTO 		{: RESULT = p4 ; CompilerLogger.print("retornou na raiz"); :}
+	T_PROGRAM T_IDENT T_PONTO_E_VIRGULA bloco:p4 T_PONTO 		{: RESULT = p4; :}
 ;
 
 bloco ::=
@@ -135,17 +136,18 @@ secao_declara_subs ::=
 ;
 
 comando_composto ::=
-    T_BEGIN comandos:p2 T_END {: RESULT = p2; :}
+    |
+    | T_BEGIN comandos:p2 T_END {: RESULT = p2; :}
 ;
 
 comandos ::=
-    | comandos:p1 comando:p2       {: RESULT = factory.buildLstComandos(p1, p2); :}
-    | comando:p1                   {: RESULT = factory.buildLstComandos(null, p1); :}
+    | comandos:p1 comando:p2        {: RESULT = factory.buildLstComandos(p1, p2); :}
+    | comando:p1                    {: RESULT = factory.buildLstComandos(null, p1); :}
 ;
 
 comando ::=
-    | cmdExpArit:p1     {: RESULT = p1; :}
     | cmdAtrib:p1       {: RESULT = p1; :}
+    | cmdExpArit:p1     {: RESULT = p1; :}
     | cmdChamaFunc:p1   {: RESULT = p1; :}
     | T_IDENT:p1        {: RESULT = p1; :}
     | T_NUM:p1          {: RESULT = p1; :}
@@ -161,12 +163,12 @@ lstParams ::=
 ;
 
 paramFunc ::=
-    | cmdExpArit:p1     {: RESULT = p1; :}
+    | paramArit:p1     {: RESULT = p1; :}
     | T_IDENT:p1        {: RESULT = p1; :}
     | T_NUM:p1          {: RESULT = p1; :}
 ;
 
-cmdExpArit ::=
+paramArit ::=
     | comando:p1 T_MAIS cmdExpArit:p3                         {: RESULT = factory.buildExpArit(p1, p3, Terminal.T_MAIS); :}
     | comando:p1 T_MAIS comando:p3                            {: RESULT = factory.buildExpArit(p1, p3, Terminal.T_MAIS); :}
     | comando:p1 T_MENOS cmdExpArit:p3                        {: RESULT = factory.buildExpArit(p1, p3, Terminal.T_MENOS); :}
@@ -175,6 +177,17 @@ cmdExpArit ::=
     | comando:p1 T_MULTIPLICACAO comando:p3                   {: RESULT = factory.buildExpArit(p1, p3, Terminal.T_MULTIPLICACAO); :}
     | comando:p1 T_DIV cmdExpArit:p3                          {: RESULT = factory.buildExpArit(p1, p3, Terminal.T_DIV); :}
     | comando:p1 T_DIV comando:p3                             {: RESULT = factory.buildExpArit(p1, p3, Terminal.T_DIV); :}
+;
+
+cmdExpArit ::=
+    | comando:p1 T_MAIS cmdExpArit:p3                         {: RESULT = factory.buildExpArit(p1, p3, Terminal.T_MAIS); :}
+    | comando:p1 T_MAIS comando:p3 T_PONTO_E_VIRGULA                           {: RESULT = factory.buildExpArit(p1, p3, Terminal.T_MAIS); :}
+    | comando:p1 T_MENOS cmdExpArit:p3                        {: RESULT = factory.buildExpArit(p1, p3, Terminal.T_MENOS); :}
+    | comando:p1 T_MENOS comando:p3 T_PONTO_E_VIRGULA                          {: RESULT = factory.buildExpArit(p1, p3, Terminal.T_MENOS); :}
+    | comando:p1 T_MULTIPLICACAO cmdExpArit:p3                {: RESULT = factory.buildExpArit(p1, p3, Terminal.T_MULTIPLICACAO); :}
+    | comando:p1 T_MULTIPLICACAO comando:p3 T_PONTO_E_VIRGULA                  {: RESULT = factory.buildExpArit(p1, p3, Terminal.T_MULTIPLICACAO); :}
+    | comando:p1 T_DIV cmdExpArit:p3                          {: RESULT = factory.buildExpArit(p1, p3, Terminal.T_DIV); :}
+    | comando:p1 T_DIV comando:p3 T_PONTO_E_VIRGULA                            {: RESULT = factory.buildExpArit(p1, p3, Terminal.T_DIV); :}
 ;
 
 cmdAtrib ::=
