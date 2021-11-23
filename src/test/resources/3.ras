@@ -3,11 +3,12 @@ program atribuicao;
   var x, y, a: integer;
 
 begin
+  read(a);
   a := 10;
   y := a;
   x := 2 + 5 * 3;
   y := 3 * x;
 
-  write(x, y);
+  write(x + 1, y);
 end.
 

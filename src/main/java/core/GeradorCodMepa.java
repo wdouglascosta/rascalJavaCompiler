@@ -1,6 +1,7 @@
 package core;
 
 import static tipos.TipoCmd.ATRIBUICAO;
+import static tipos.TipoCmd.CHAMADA_FUNC;
 import static tipos.TipoCmd.FINAL;
 
 import java.util.List;
@@ -8,6 +9,7 @@ import java.util.Map;
 
 import tipos.Bloco;
 import tipos.CmdAtrib;
+import tipos.CmdChamaFunc;
 import tipos.CmdExpArit;
 import tipos.Comando;
 import tipos.TipoCmd;
@@ -32,6 +34,8 @@ public class GeradorCodMepa {
     private static final String SUBT = "SUBT";
     private static final String DIVI = "DIVI";
     private static final String MULT = "MULT";
+    private static final String LEIT = "LEIT";
+    private static final String IMPR = "IMPR";
     private Map<String, VarTabSim> tabSimbolos;
 
     public GeradorCodMepa(Map<String, VarTabSim> tabSimbolos) {
@@ -67,6 +71,8 @@ public class GeradorCodMepa {
                 case ATRIBUICAO:
                     genAtribuicao((CmdAtrib) cmd);
                     break;
+                case CHAMADA_FUNC:
+                    genChamaFunc((CmdChamaFunc) cmd);
             }
         }
 
@@ -77,35 +83,75 @@ public class GeradorCodMepa {
             case FINAL:
                 LexerToken expressao = (LexerToken) cmd.getExpressao();
                 genLexerToken(expressao);
+                genARMZ(cmd.getVariavel());
                 break;
             case EXP_ARIT:
                 genExpArit((CmdExpArit) cmd.getExpressao());
+                genARMZ(cmd.getVariavel());
                 break;
             case CHAMADA_FUNC:
-                //TODO implementar
+                genChamaFunc((CmdChamaFunc) cmd.getExpressao());
 
         }
-        sb.append(DTAB)
-                .append(ARMZ)
-                .append(TAB)
-                .append(calcEndereco(cmd.getVariavel()))
-                .append(LIN);
+
 
     }
 
-    private void genLexerToken(LexerToken expressao) {
+    private void genARMZ(LexerToken cmd) {
 
-        if (Utils.isAnInteger(expressao)){
+        sb.append(DTAB)
+                .append(ARMZ)
+                .append(TAB)
+                .append(calcEndereco(cmd))
+                .append(LIN);
+    }
+
+    private void genChamaFunc(CmdChamaFunc cmdChamaFunc) throws ErroGeradorCodException {
+
+        String nomeFunc = cmdChamaFunc.getNomeFunc().getVal();
+        if (nomeFunc.equals("write") || nomeFunc.equals("read")){
+            genIOFunc(cmdChamaFunc);
+        }
+
+    }
+
+    private void genIOFunc(CmdChamaFunc cmdChamaFunc) throws ErroGeradorCodException {
+        if (cmdChamaFunc.getNomeFunc().getVal().equals("read")){
+            LexerToken destVar = (LexerToken) cmdChamaFunc.getParams().get(0);
+
+            sb.append(DTAB).append(LEIT).append(LIN);
+            genARMZ(destVar);
+        } else if (cmdChamaFunc.getNomeFunc().getVal().equals("write")){
+            for(Comando cmd : cmdChamaFunc.getParams()){
+                switch (cmd.getTipo()){
+                    case EXP_ARIT:
+                        genExpArit((CmdExpArit) cmd);
+                        break;
+                    case FINAL:
+                        genLexerToken((LexerToken) cmd);
+                    case CHAMADA_FUNC:
+                        //TODO implementar chamada de função como parametro
+                }
+                sb.append(DTAB).append(IMPR).append(LIN);
+            }
+
+        }
+
+    }
+
+    private void genLexerToken(LexerToken token) {
+
+        if (Utils.isAnInteger(token)){
             sb.append(DTAB)
                     .append(CRCT)
                     .append(TAB)
-                    .append(expressao.getVal())
+                    .append(token.getVal())
                     .append(LIN);
         } else {
             sb.append(DTAB)
                     .append(CRVL)
                     .append(TAB)
-                    .append(calcEndereco(expressao))
+                    .append(calcEndereco(token))
                     .append(LIN);
         }
     }
