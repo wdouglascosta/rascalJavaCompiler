@@ -14,15 +14,16 @@ import tipos.Comando;
 import tipos.DecVar;
 import tipos.TipoCmd;
 import utils.ErroSemanticoException;
+import utils.Utils;
 
 public class Semantico {
 
     private static final String WRITE_FUNC = "write";
     private static final String READ_FUNC = "read";
-    Map<String, VarType> certifiedVars = new HashMap<String, VarType>();
+    Map<String, VarTabSim> tabelaSimbolos = new HashMap<String, VarTabSim>();
     private int errorCounter = 0;
 
-    public void run(Bloco program) throws ErroSemanticoException {
+    public Map<String, VarTabSim> run(Bloco program) throws ErroSemanticoException {
 
         if (program.getDecVar() != null) {
             processDecVar(program.getDecVar());
@@ -40,6 +41,8 @@ public class Semantico {
             throw new ErroSemanticoException("Análise semântica retornou erros. ErrorCounter: " + errorCounter);
         }
         System.out.println("Sucesso!");
+
+        return tabelaSimbolos;
     }
 
     private void processCmdComp(List<Comando> cmdComp) {
@@ -72,7 +75,7 @@ public class Semantico {
                         break;
                     case FINAL:
                         LexerToken finalToken = (LexerToken) param;
-                        if (!isAnInteger(finalToken)) {
+                        if (!Utils.isAnInteger(finalToken)) {
                             checkIntVar(finalToken);
                         }
                         break;
@@ -103,34 +106,23 @@ public class Semantico {
 
     private void validateExpArit(CmdExpArit cmd) {
 
-        if (!isAnInteger((LexerToken) cmd.getEsq())) {
+        if (!Utils.isAnInteger((LexerToken) cmd.getEsq())) {
             checkIntVar((LexerToken) cmd.getEsq());
         }
 
         if (cmd.getDir().getTipo() != TipoCmd.FINAL) {
             validateExpArit((CmdExpArit) cmd.getDir());
         } else {
-            if (!isAnInteger((LexerToken) cmd.getDir())) {
+            if (!Utils.isAnInteger((LexerToken) cmd.getDir())) {
                 checkIntVar((LexerToken) cmd.getDir());
             }
         }
 
     }
 
-    private Boolean isAnInteger(LexerToken var) {
-
-        try {
-            Integer.valueOf(var.getVal());
-            return true;
-        } catch (NumberFormatException nfe) {
-            return false;
-        }
-
-    }
-
     private void checkIntVar(LexerToken token) {
 
-        if (checkVarExists(token) && certifiedVars.get(token.getVal()) != VarType.INTEGER) {
+        if (checkVarExists(token) && tabelaSimbolos.get(token.getVal()).getTipo() != VarType.INTEGER) {
             System.err.println("A variavel '" + token.getVal() + "' não aceita operações aritméticas");
             printLinha(token);
             errorCounter++;
@@ -139,7 +131,7 @@ public class Semantico {
 
     private Boolean checkVarExists(LexerToken token) {
 
-        if (!certifiedVars.containsKey(token.getVal())) {
+        if (!tabelaSimbolos.containsKey(token.getVal())) {
             System.err.println("Variável '" + token.getVal() + "' não foi declarada no escopo");
             errorCounter++;
             return false;
@@ -151,14 +143,15 @@ public class Semantico {
 
         Set<String> unique = new HashSet<String>();
         Set<DecVar> duplicatedVars = new HashSet<DecVar>();
+        Integer address = 0;
         for (DecVar var : lstDecVar) {
             //check duplicated name declarations
             if (!unique.add(var.getIdent().getVal())) {
                 duplicatedVars.add(var);
             }
             //check type declaration
-            certifiedVars.put(var.getIdent().getVal(), getVarType(var));
-
+            tabelaSimbolos.put(var.getIdent().getVal(), new VarTabSim(getVarType(var), address));
+            address++;
         }
         if (duplicatedVars.size() > 0) {
             System.err.println("Declaração de variáveis com o mesmo nome!");

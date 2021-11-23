@@ -1,10 +1,13 @@
 import java.io.FileReader;
+import java.util.Map;
 
 import org.junit.Test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import core.GeradorCodMepa;
 import core.Semantico;
+import core.VarTabSim;
 import generatedSources.Sintatico;
 import java_cup.runtime.Symbol;
 import tipos.Bloco;
@@ -15,12 +18,14 @@ public class test1 {
     public void testeDeclaracaoDeVariaveis() throws Exception {
         String sourceCode = System.getProperty("user.dir") + "/src/test/resources/";
         System.out.println(sourceCode);
-        Sintatico sintatico = new Sintatico(new generatedSources.Lexico(new FileReader(sourceCode + "2.ras")));
+        Sintatico sintatico = new Sintatico(new generatedSources.Lexico(new FileReader(sourceCode + "3.ras")));
         Semantico semantico = new Semantico();
         Symbol parse = sintatico.parse();
         Bloco value = (Bloco) parse.value;
-        semantico.run(value);
+        Map<String, VarTabSim> tabSimbolos = semantico.run(value);
+        GeradorCodMepa mepa = new GeradorCodMepa(tabSimbolos);
         String json = mapper.writeValueAsString(value);
+        mepa.generate(value);
         System.out.println(value);
     }
 
