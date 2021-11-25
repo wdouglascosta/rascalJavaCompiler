@@ -18,7 +18,7 @@ public class test1 {
     public void testeDeclaracaoDeVariaveis() throws Exception {
         String sourceCode = System.getProperty("user.dir") + "/src/test/resources/";
         System.out.println(sourceCode);
-        Sintatico sintatico = new Sintatico(new generatedSources.Lexico(new FileReader(sourceCode + "if.ras")));
+        Sintatico sintatico = new Sintatico(new generatedSources.Lexico(new FileReader(sourceCode + "if2.ras")));
         Semantico semantico = new Semantico();
         Symbol parse = sintatico.parse();
         Bloco value = (Bloco) parse.value;

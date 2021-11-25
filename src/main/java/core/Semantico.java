@@ -12,6 +12,7 @@ import tipos.CmdChamaFunc;
 import tipos.CmdExpArit;
 import tipos.CmdExpBin;
 import tipos.CmdIf;
+import tipos.CmdWhile;
 import tipos.Comando;
 import tipos.DecVar;
 import tipos.TipoCmd;
@@ -54,7 +55,6 @@ public class Semantico {
                 case EXP_ARIT:
                     validateExpArit((CmdExpArit) cmd);
                     break;
-
                 case ATRIBUICAO:
                     validateAtribuicao((CmdAtrib) cmd);
                     break;
@@ -64,9 +64,17 @@ public class Semantico {
                 case CMD_IF:
                     validateCmdIf((CmdIf) cmd);
                     break;
+                case CMD_WHILE:
+                    validateCmdWhile((CmdWhile) cmd);
+                    break;
             }
         }
 
+    }
+
+    private void validateCmdWhile(CmdWhile cmd) {
+        validateExpBin(cmd.getCondicao());
+        processCmdComp(cmd.getCmdComp());
     }
 
     private void validateCmdIf(CmdIf cmd) {
@@ -102,7 +110,26 @@ public class Semantico {
 
     private void validateChamaFunc(CmdChamaFunc cmd) {
 
-        if (cmd.getNomeFunc().getVal().equals(WRITE_FUNC) || cmd.getNomeFunc().getVal().equals(READ_FUNC)) {
+        if(cmd.getNomeFunc().getVal().equals(READ_FUNC)){
+            List<Comando> params = cmd.getParams();
+            for (Comando param : params) {
+                if (param.getTipo() == TipoCmd.FINAL) {
+
+                        LexerToken finalToken = (LexerToken) param;
+                        if (!Utils.isAnInteger(finalToken)) {
+                            checkIntVar(finalToken);
+                        }
+                        break;
+                } else {
+                    System.err.println("A função 'read' não aceita expressões compostas");
+                    printLinha(cmd.getNomeFunc());
+                    errorCounter++;
+                }
+
+            }
+        }
+
+        if (cmd.getNomeFunc().getVal().equals(WRITE_FUNC)) {
             List<Comando> params = cmd.getParams();
             for (Comando param : params) {
                 switch (param.getTipo()) {
@@ -136,6 +163,11 @@ public class Semantico {
         if (expressao.getTipo() == TipoCmd.EXP_ARIT) {
 
             validateExpArit((CmdExpArit) expressao);
+        }
+        if (expressao.getTipo() == TipoCmd.FINAL) {
+            if (!Utils.isAnInteger((LexerToken) expressao)) {
+                checkIntVar((LexerToken) expressao);
+            }
         }
 
     }

@@ -11,6 +11,8 @@ import tipos.Bloco;
 import tipos.CmdAtrib;
 import tipos.CmdChamaFunc;
 import tipos.CmdExpArit;
+import tipos.CmdExpBin;
+import tipos.CmdIf;
 import tipos.Comando;
 import tipos.TipoCmd;
 import utils.ErroGeradorCodException;
@@ -36,7 +38,24 @@ public class GeradorCodMepa {
     private static final String MULT = "MULT";
     private static final String LEIT = "LEIT";
     private static final String IMPR = "IMPR";
+
+    private static final String CMMA = "CMMA";
+    private static final String CMAG = "CMAG";
+    private static final String CMME = "CMME";
+    private static final String CMEG = "CMEG";
+    private static final String CMIG = "CMIG";
+    private static final String CMDG = "CMDG";
+    private static final String DSVF = "DSVF";
+
     private Map<String, VarTabSim> tabSimbolos;
+
+    private int labelCounter = 0;
+
+    private String getNewLabel(){
+        String s = "L" + labelCounter;
+        labelCounter++;
+        return s;
+    }
 
     public GeradorCodMepa(Map<String, VarTabSim> tabSimbolos) {
 
@@ -73,12 +92,68 @@ public class GeradorCodMepa {
                     break;
                 case CHAMADA_FUNC:
                     genChamaFunc((CmdChamaFunc) cmd);
+                    break;
+                case CMD_IF:
+                    genIf((CmdIf) cmd);
             }
         }
 
     }
 
+    private void genIf(CmdIf cmd) throws ErroGeradorCodException {
+        String labelIfFalse = getNewLabel();
+        String labelElse = "";
+        CmdExpBin condicao = cmd.getCondicao();
+        Boolean isElse = cmd.getCmdElse() != null;
+        if (condicao.getEsq().getTipo() != FINAL && condicao.getDir().getTipo() != FINAL){
+            //TODO gerar if com condição composta dos dos lados
+        }
+
+        if (condicao.getEsq().getTipo() == FINAL && condicao.getDir().getTipo() == FINAL){
+            genLexerToken((LexerToken) condicao.getEsq());
+            genLexerToken((LexerToken) condicao.getDir());
+            genOpLogico(condicao.getOperacao());
+        }
+
+        sb.append(DTAB).append(DSVF).append(TAB).append(labelIfFalse).append(LIN);
+        genCmdComp(cmd.getCmdComp());
+        if(isElse) {
+            labelElse = getNewLabel();
+            sb.append(DTAB).append(DSVS).append(TAB).append(labelElse).append(LIN);
+        }
+        sb.append(labelIfFalse).append(":").append(DTAB).append(NADA).append(LIN);
+        if(isElse){
+            genCmdComp(cmd.getCmdElse());
+            sb.append(labelElse).append(":").append(DTAB).append(NADA).append(LIN);
+        }
+    }
+
+    private void genOpLogico(Terminal operacao) {
+        switch (operacao){
+            case T_MAIOR_QUE:
+                sb.append(DTAB).append(CMMA).append(LIN);
+                break;
+            case T_MAIOR_IGUAL:
+                sb.append(DTAB).append(CMAG).append(LIN);
+                break;
+            case T_MENOR_QUE:
+                sb.append(DTAB).append(CMME).append(LIN);
+                break;
+            case T_MENOR_IGUAL:
+                sb.append(DTAB).append(CMEG).append(LIN);
+                break;
+            case T_IGUAL:
+                sb.append(DTAB).append(CMIG).append(LIN);
+                break;
+            case T_NAO_IGUAL:
+                sb.append(DTAB).append(CMDG).append(LIN);
+                break;
+        }
+
+    }
+
     private void genAtribuicao(CmdAtrib cmd) throws ErroGeradorCodException {
+
         switch(cmd.getExpressao().getTipo()){
             case FINAL:
                 LexerToken expressao = (LexerToken) cmd.getExpressao();
@@ -93,7 +168,6 @@ public class GeradorCodMepa {
                 genChamaFunc((CmdChamaFunc) cmd.getExpressao());
 
         }
-
 
     }
 
@@ -117,10 +191,13 @@ public class GeradorCodMepa {
 
     private void genIOFunc(CmdChamaFunc cmdChamaFunc) throws ErroGeradorCodException {
         if (cmdChamaFunc.getNomeFunc().getVal().equals("read")){
-            LexerToken destVar = (LexerToken) cmdChamaFunc.getParams().get(0);
+            for (Comando cmd : cmdChamaFunc.getParams()) {
 
-            sb.append(DTAB).append(LEIT).append(LIN);
-            genARMZ(destVar);
+                sb.append(DTAB).append(LEIT).append(LIN);
+                genARMZ((LexerToken) cmd);
+            }
+
+
         } else if (cmdChamaFunc.getNomeFunc().getVal().equals("write")){
             for(Comando cmd : cmdChamaFunc.getParams()){
                 switch (cmd.getTipo()){

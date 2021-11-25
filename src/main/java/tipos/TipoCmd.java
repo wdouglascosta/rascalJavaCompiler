@@ -6,5 +6,6 @@ public enum TipoCmd {
     EXP_BIN,
     FINAL,
     CHAMADA_FUNC,
-    CMD_IF;
+    CMD_IF,
+    CMD_WHILE;
 }

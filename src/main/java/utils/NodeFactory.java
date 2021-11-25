@@ -11,6 +11,7 @@ import tipos.CmdChamaFunc;
 import tipos.CmdExpArit;
 import tipos.CmdExpBin;
 import tipos.CmdIf;
+import tipos.CmdWhile;
 import tipos.Comando;
 import tipos.DecVar;
 import tipos.TpDecVar;
@@ -77,9 +78,14 @@ public class NodeFactory {
 
     }
 
-    public Comando buildCmdIf(CmdExpBin condicao, List<Comando> lstCmdComp){
+    public Comando buildCmdIf(CmdExpBin condicao, List<Comando> lstCmdComp, List<Comando> lstCmdElse){
 
-        return new CmdIf(condicao, lstCmdComp);
+        return new CmdIf(condicao, lstCmdComp, lstCmdElse);
+    }
+
+    public Comando buildCmdWhile(CmdExpBin condicao, List<Comando> lstCmdComp){
+
+        return new CmdWhile(condicao, lstCmdComp);
     }
 
 }

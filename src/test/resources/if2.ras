@@ -1,0 +1,25 @@
+program cmdIf;
+
+  var x, y: integer;
+
+begin
+  if x <= y then
+    begin
+      write(x + y);
+      if y > 0 then
+        begin
+          y := x + 1;
+        end
+      x := x - 10;
+    end
+  else
+    begin
+      write(x * y);
+    end
+
+  if (x <> y) then
+    begin
+      x := y * 8;
+    end
+
+end.

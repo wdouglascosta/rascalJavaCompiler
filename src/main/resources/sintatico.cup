@@ -102,6 +102,8 @@ non terminal Comando OpBinComposta;
 non terminal CmdExpBin cmdExpBinSimples;
 non terminal CmdExpBin cmdExpBinComposta;
 non terminal Comando cmdIf;
+non terminal Comando cmdWhile;
+non terminal List<Comando> cmdElse;
 
 
 start with programa;
@@ -115,22 +117,22 @@ bloco ::=
 ;
 
 secao_declara_vars ::=
-    |
+
     |T_VAR lista_declara_vars:p2    {: RESULT = factory.buildListDecVar(p2); :}
 ;
 
 lista_declara_vars ::=
-    |lista_declara_vars:p1 declara_vars:p2      {: RESULT = factory.buildListTpDecVar(p1, p2); :}
+     lista_declara_vars:p1 declara_vars:p2      {: RESULT = factory.buildListTpDecVar(p1, p2); :}
     |declara_vars:p1                            {: RESULT = factory.buildListTpDecVar(null, p1); :}
 ;
 
 declara_vars ::=
-    |lista_ident:p1 T_DOIS_PONTOS tipo:p3 T_PONTO_E_VIRGULA {: RESULT = factory.buildTpDecVar(p1, p3); :}
+     lista_ident:p1 T_DOIS_PONTOS tipo:p3 T_PONTO_E_VIRGULA {: RESULT = factory.buildTpDecVar(p1, p3); :}
 ;
 
 lista_ident ::=
-    |lista_ident:p1 T_VIRGULA T_IDENT:p3 {: RESULT = factory.buildIdentList(p1, p3);:}
-    |T_IDENT:p1 {: RESULT = factory.buildIdentList(null, p1); :}
+      lista_ident:p1 T_VIRGULA T_IDENT:p3 {: RESULT = factory.buildIdentList(p1, p3);:}
+    | T_IDENT:p1 {: RESULT = factory.buildIdentList(null, p1); :}
 ;
 
 tipo ::=
@@ -142,37 +144,45 @@ secao_declara_subs ::=
 ;
 
 comando_composto ::=
-    |
-    | T_BEGIN comandos:p2 T_END {: RESULT = p2; :}
+    T_BEGIN comandos:p2 T_END {: RESULT = p2; :}
 ;
 
 comandos ::=
-    | comandos:p1 comando:p2        {: RESULT = factory.buildLstComandos(p1, p2); :}
+      comandos:p1 comando:p2        {: RESULT = factory.buildLstComandos(p1, p2); :}
     | comando:p1                    {: RESULT = factory.buildLstComandos(null, p1); :}
 ;
 
 comando ::=
-    | comando_secundario:p1     {: RESULT = p1; :}
+      comando_secundario:p1     {: RESULT = p1; :}
     | cmdAtrib:p1               {: RESULT = p1; :}
     | cmdIf:p1                  {: RESULT = p1; :}
-    /*| cmdWhile:p1       {: RESULT = p1; :}*/
+    | cmdWhile:p1               {: RESULT = p1; :}
 
 ;
 
 comando_secundario ::=
-    | cmdExpArit:p1     {: RESULT = p1; :}
+      cmdExpArit:p1     {: RESULT = p1; :}
     | cmdChamaFunc:p1   {: RESULT = p1; :}
     | T_IDENT:p1        {: RESULT = p1; :}
     | T_NUM:p1          {: RESULT = p1; :}
 ;
 
 cmdIf ::=
-    | T_IF cmdExpBinSimples:p2 T_THEN comando_composto:p5 {: RESULT = factory.buildCmdIf(p2, p5); :}
-    | T_IF T_ABRE_PARENTESES cmdExpBinComposta:p2 T_FECHA_PARENTESES T_THEN comando_composto:p5 {: RESULT = factory.buildCmdIf(p2, p5); :}
+      T_IF cmdExpBinSimples:p2 T_THEN comando_composto:p5 cmdElse:p6 {: RESULT = factory.buildCmdIf(p2, p5, p6); :}
+    | T_IF T_ABRE_PARENTESES cmdExpBinComposta:p2 T_FECHA_PARENTESES T_THEN comando_composto:p5 cmdElse:p6 {: RESULT = factory.buildCmdIf(p2, p5, p6); :}
+;
+
+cmdElse ::=
+
+    | T_ELSE comando_composto:p1  {: RESULT = p1; :}
+;
+
+cmdWhile ::=
+    T_WHILE T_ABRE_PARENTESES cmdExpBinComposta:p2 T_FECHA_PARENTESES T_DO comando_composto:p5 {: RESULT = factory.buildCmdWhile(p2, p5); :}
 ;
 
 cmdExpBinSimples ::=
-    | opBinSimples:p1 T_MAIOR_QUE opBinSimples:p3       {: RESULT = factory.buildExpBin(p1,Terminal.T_MAIOR_QUE, p3); :}
+      opBinSimples:p1 T_MAIOR_QUE opBinSimples:p3       {: RESULT = factory.buildExpBin(p1,Terminal.T_MAIOR_QUE, p3); :}
     | opBinSimples:p1 T_MAIOR_IGUAL opBinSimples:p3     {: RESULT = factory.buildExpBin(p1,Terminal.T_MAIOR_IGUAL, p3); :}
     | opBinSimples:p1 T_MENOR_QUE opBinSimples:p3       {: RESULT = factory.buildExpBin(p1,Terminal.T_MENOR_QUE, p3); :}
     | opBinSimples:p1 T_MENOR_IGUAL opBinSimples:p3     {: RESULT = factory.buildExpBin(p1,Terminal.T_MENOR_IGUAL, p3); :}
@@ -181,13 +191,13 @@ cmdExpBinSimples ::=
 ;
 
 opBinSimples ::=
-    | cmdChamaFunc:p1   {: RESULT = p1; :}
+      cmdChamaFunc:p1   {: RESULT = p1; :}
     | T_IDENT:p1        {: RESULT = p1; :}
     | T_NUM:p1          {: RESULT = p1; :}
 ;
 
 cmdExpBinComposta ::=
-    | OpBinComposta:p1 T_MAIOR_QUE OpBinComposta:p3       {: RESULT = factory.buildExpBin(p1,Terminal.T_MAIOR_QUE, p3); :}
+      OpBinComposta:p1 T_MAIOR_QUE OpBinComposta:p3       {: RESULT = factory.buildExpBin(p1,Terminal.T_MAIOR_QUE, p3); :}
     | OpBinComposta:p1 T_MAIOR_IGUAL OpBinComposta:p3     {: RESULT = factory.buildExpBin(p1,Terminal.T_MAIOR_IGUAL, p3); :}
     | OpBinComposta:p1 T_MENOR_QUE OpBinComposta:p3       {: RESULT = factory.buildExpBin(p1,Terminal.T_MENOR_QUE, p3); :}
     | OpBinComposta:p1 T_MENOR_IGUAL OpBinComposta:p3     {: RESULT = factory.buildExpBin(p1,Terminal.T_MENOR_IGUAL, p3); :}
@@ -196,7 +206,7 @@ cmdExpBinComposta ::=
 ;
 
 OpBinComposta ::=
-    | opBinSimples:p1   {: RESULT = p1; :}
+      opBinSimples:p1   {: RESULT = p1; :}
     | paramArit:p1      {: RESULT = p1; :}
 ;
 
@@ -205,18 +215,18 @@ cmdChamaFunc ::=
 ;
 
 lstParams ::=
-    | lstParams:p1 T_VIRGULA paramFunc:p3   {: RESULT = factory.buildLstComandos(p1, p3); :}
+      lstParams:p1 T_VIRGULA paramFunc:p3   {: RESULT = factory.buildLstComandos(p1, p3); :}
     | paramFunc:p1                          {: RESULT = factory.buildLstComandos(null, p1); :}
 ;
 
 paramFunc ::=
-    | paramArit:p1     {: RESULT = p1; :}
+      paramArit:p1     {: RESULT = p1; :}
     | T_IDENT:p1        {: RESULT = p1; :}
     | T_NUM:p1          {: RESULT = p1; :}
 ;
 
 paramArit ::=
-    | comando_secundario:p1 T_MAIS paramArit:p3                         {: RESULT = factory.buildExpArit(p1, p3, Terminal.T_MAIS); :}
+      comando_secundario:p1 T_MAIS paramArit:p3                         {: RESULT = factory.buildExpArit(p1, p3, Terminal.T_MAIS); :}
     | comando_secundario:p1 T_MAIS comando_secundario:p3                            {: RESULT = factory.buildExpArit(p1, p3, Terminal.T_MAIS); :}
     | comando_secundario:p1 T_MENOS paramArit:p3                        {: RESULT = factory.buildExpArit(p1, p3, Terminal.T_MENOS); :}
     | comando_secundario:p1 T_MENOS comando_secundario:p3                           {: RESULT = factory.buildExpArit(p1, p3, Terminal.T_MENOS); :}
@@ -227,7 +237,7 @@ paramArit ::=
 ;
 
 cmdExpArit ::=
-    | comando_secundario:p1 T_MAIS cmdExpArit:p3                         {: RESULT = factory.buildExpArit(p1, p3, Terminal.T_MAIS); :}
+      comando_secundario:p1 T_MAIS cmdExpArit:p3                         {: RESULT = factory.buildExpArit(p1, p3, Terminal.T_MAIS); :}
     | comando_secundario:p1 T_MAIS comando_secundario:p3 T_PONTO_E_VIRGULA                           {: RESULT = factory.buildExpArit(p1, p3, Terminal.T_MAIS); :}
     | comando_secundario:p1 T_MENOS cmdExpArit:p3                        {: RESULT = factory.buildExpArit(p1, p3, Terminal.T_MENOS); :}
     | comando_secundario:p1 T_MENOS comando_secundario:p3 T_PONTO_E_VIRGULA                          {: RESULT = factory.buildExpArit(p1, p3, Terminal.T_MENOS); :}
@@ -238,7 +248,7 @@ cmdExpArit ::=
 ;
 
 cmdAtrib ::=
-    | T_IDENT:p1 T_ATRIBUICAO comando_secundario:p3                    {: RESULT = factory.buildCmdAtrib(p1, p3); :}
+      T_IDENT:p1 T_ATRIBUICAO comando_secundario:p3                    {: RESULT = factory.buildCmdAtrib(p1, p3); :}
     | T_IDENT:p1 T_ATRIBUICAO comando_secundario:p3 T_PONTO_E_VIRGULA  {: RESULT = factory.buildCmdAtrib(p1, p3); :}
 ;
 
