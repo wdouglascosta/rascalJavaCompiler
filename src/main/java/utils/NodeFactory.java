@@ -9,6 +9,8 @@ import tipos.Bloco;
 import tipos.CmdAtrib;
 import tipos.CmdChamaFunc;
 import tipos.CmdExpArit;
+import tipos.CmdExpBin;
+import tipos.CmdIf;
 import tipos.Comando;
 import tipos.DecVar;
 import tipos.TpDecVar;
@@ -68,6 +70,16 @@ public class NodeFactory {
 
     public CmdChamaFunc buildChamaFunc(LexerToken nomeFunc, List<Comando> params){
         return new CmdChamaFunc(params, nomeFunc);
+    }
+
+    public CmdExpBin buildExpBin(Comando esq, Terminal operador, Comando dir){
+        return new CmdExpBin(esq, dir, operador);
+
+    }
+
+    public Comando buildCmdIf(CmdExpBin condicao, List<Comando> lstCmdComp){
+
+        return new CmdIf(condicao, lstCmdComp);
     }
 
 }

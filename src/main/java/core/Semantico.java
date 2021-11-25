@@ -10,6 +10,8 @@ import tipos.Bloco;
 import tipos.CmdAtrib;
 import tipos.CmdChamaFunc;
 import tipos.CmdExpArit;
+import tipos.CmdExpBin;
+import tipos.CmdIf;
 import tipos.Comando;
 import tipos.DecVar;
 import tipos.TipoCmd;
@@ -58,10 +60,44 @@ public class Semantico {
                     break;
                 case CHAMADA_FUNC:
                     validateChamaFunc((CmdChamaFunc) cmd);
-
+                    break;
+                case CMD_IF:
+                    validateCmdIf((CmdIf) cmd);
+                    break;
             }
         }
 
+    }
+
+    private void validateCmdIf(CmdIf cmd) {
+        validateExpBin(cmd.getCondicao());
+        processCmdComp(cmd.getCmdComp());
+
+    }
+
+    private void validateExpBin(CmdExpBin condicao) {
+
+        validateBinOpr(condicao.getEsq());
+        validateBinOpr(condicao.getDir());
+
+    }
+
+    private void validateBinOpr(Comando param) {
+
+        switch(param.getTipo()){
+            case EXP_ARIT:
+                validateExpArit((CmdExpArit) param);
+                break;
+            case CHAMADA_FUNC:
+                validateChamaFunc((CmdChamaFunc) param);
+                break;
+            case FINAL:
+                LexerToken finalToken = (LexerToken) param;
+                if (!Utils.isAnInteger(finalToken)) {
+                    checkIntVar(finalToken);
+                }
+                break;
+        }
     }
 
     private void validateChamaFunc(CmdChamaFunc cmd) {
@@ -133,6 +169,7 @@ public class Semantico {
 
         if (!tabelaSimbolos.containsKey(token.getVal())) {
             System.err.println("Variável '" + token.getVal() + "' não foi declarada no escopo");
+            printLinha(token);
             errorCounter++;
             return false;
         }
