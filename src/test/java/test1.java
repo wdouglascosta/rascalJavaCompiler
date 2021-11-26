@@ -14,11 +14,12 @@ import tipos.Bloco;
 
 public class test1 {
     ObjectMapper mapper = new ObjectMapper();
+
     @Test
     public void testeDeclaracaoDeVariaveis() throws Exception {
         String sourceCode = System.getProperty("user.dir") + "/src/test/resources/";
         System.out.println(sourceCode);
-        Sintatico sintatico = new Sintatico(new generatedSources.Lexico(new FileReader(sourceCode + "if2.ras")));
+        Sintatico sintatico = new Sintatico(new generatedSources.Lexico(new FileReader(sourceCode + "while3.ras")));
         Semantico semantico = new Semantico();
         Symbol parse = sintatico.parse();
         Bloco value = (Bloco) parse.value;

@@ -13,6 +13,7 @@ import tipos.CmdChamaFunc;
 import tipos.CmdExpArit;
 import tipos.CmdExpBin;
 import tipos.CmdIf;
+import tipos.CmdWhile;
 import tipos.Comando;
 import tipos.TipoCmd;
 import utils.ErroGeradorCodException;
@@ -95,8 +96,43 @@ public class GeradorCodMepa {
                     break;
                 case CMD_IF:
                     genIf((CmdIf) cmd);
+                    break;
+                case CMD_WHILE:
+                    genWhile((CmdWhile) cmd);
+                    break;
             }
         }
+
+    }
+
+    private void genWhile(CmdWhile cmd) throws ErroGeradorCodException {
+        String headWhile = getNewLabel();
+        String labelIfFalse = getNewLabel();
+        sb.append(headWhile)
+                .append(":")
+                .append(DTAB)
+                .append(NADA)
+                .append(LIN);
+        CmdExpBin condicao = cmd.getCondicao();
+        if (condicao.getEsq().getTipo() == FINAL && condicao.getDir().getTipo() == FINAL){
+            genCondicaoSimples(condicao);
+        }
+        sb.append(DTAB)
+                .append(DSVF)
+                .append(TAB)
+                .append(labelIfFalse)
+                .append(LIN);
+        genCmdComp(cmd.getCmdComp());
+        sb.append(DTAB)
+                .append(DSVS)
+                .append(TAB)
+                .append(headWhile)
+                .append(LIN);
+        sb.append(labelIfFalse)
+                .append(":")
+                .append(DTAB)
+                .append(NADA)
+                .append(LIN);
 
     }
 
@@ -108,24 +144,45 @@ public class GeradorCodMepa {
         if (condicao.getEsq().getTipo() != FINAL && condicao.getDir().getTipo() != FINAL){
             //TODO gerar if com condição composta dos dos lados
         }
-
         if (condicao.getEsq().getTipo() == FINAL && condicao.getDir().getTipo() == FINAL){
-            genLexerToken((LexerToken) condicao.getEsq());
-            genLexerToken((LexerToken) condicao.getDir());
-            genOpLogico(condicao.getOperacao());
+            genCondicaoSimples(condicao);
         }
 
-        sb.append(DTAB).append(DSVF).append(TAB).append(labelIfFalse).append(LIN);
+        sb.append(DTAB)
+                .append(DSVF)
+                .append(TAB)
+                .append(labelIfFalse)
+                .append(LIN);
         genCmdComp(cmd.getCmdComp());
         if(isElse) {
             labelElse = getNewLabel();
-            sb.append(DTAB).append(DSVS).append(TAB).append(labelElse).append(LIN);
+            sb.append(DTAB)
+                    .append(DSVS)
+                    .append(TAB)
+                    .append(labelElse)
+                    .append(LIN);
         }
-        sb.append(labelIfFalse).append(":").append(DTAB).append(NADA).append(LIN);
+        sb.append(labelIfFalse)
+                .append(":")
+                .append(DTAB)
+                .append(NADA)
+                .append(LIN);
         if(isElse){
             genCmdComp(cmd.getCmdElse());
-            sb.append(labelElse).append(":").append(DTAB).append(NADA).append(LIN);
+            sb.append(labelElse)
+                    .append(":")
+                    .append(DTAB)
+                    .append(NADA)
+                    .append(LIN);
         }
+    }
+
+    private void genCondicaoSimples(CmdExpBin condicao) {
+
+            genLexerToken((LexerToken) condicao.getEsq());
+            genLexerToken((LexerToken) condicao.getDir());
+            genOpLogico(condicao.getOperacao());
+
     }
 
     private void genOpLogico(Terminal operacao) {
