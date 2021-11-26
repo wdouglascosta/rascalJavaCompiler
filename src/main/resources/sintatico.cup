@@ -80,7 +80,7 @@ terminal LexerToken T_IDENT;
 
 /* NON TERMINAL */
 non terminal Bloco programa;
-non terminal secao_declara_subs;
+non terminal List<Comando> secao_declara_subs;
 non terminal List<Comando> comando_composto;
 non terminal Bloco bloco;
 non terminal List<DecVar> secao_declara_vars;
@@ -104,6 +104,12 @@ non terminal CmdExpBin cmdExpBinComposta;
 non terminal Comando cmdIf;
 non terminal Comando cmdWhile;
 non terminal List<Comando> cmdElse;
+non terminal DecVar decParamFunc;
+non terminal List<DecVar> lstParamFunc;
+non terminal DecProc declaraProcedimento;
+non terminal DecFunc declaraFuncao;
+non terminal Comando decSubs;
+non terminal BlocoSub blocoSub;
 
 
 start with programa;
@@ -113,7 +119,11 @@ programa ::=
 ;
 
 bloco ::=
-    secao_declara_vars:p1 secao_declara_subs:p2 comando_composto:p3 {: RESULT = factory.buildBloco(p1, null, p3);  :}
+    secao_declara_vars:p1 secao_declara_subs:p2 comando_composto:p3 {: RESULT = factory.buildBloco(p1, p2, p3);  :}
+;
+
+blocoSub ::=
+    secao_declara_vars:p1 comando_composto:p2 {: RESULT = factory.buildBlocoSub(p1, p2);  :}
 ;
 
 secao_declara_vars ::=
@@ -140,7 +150,30 @@ tipo ::=
 ;
 
 secao_declara_subs ::=
+    secao_declara_subs:p1 decSubs:p2  {: RESULT = factory.buildLstDecSub(p1, p2); :}
+    | decSubs:p1 {: RESULT = factory.buildLstDecSub(null, p1); :}
+;
 
+decSubs ::=
+    declaraProcedimento:p1     {: RESULT = p1; :}
+    | declaraFuncao:p1         {: RESULT = p1; :}
+;
+
+declaraProcedimento ::=
+    T_PROCEDURE T_IDENT:p2 T_ABRE_PARENTESES lstParamFunc:p4 T_FECHA_PARENTESES T_PONTO_E_VIRGULA blocoSub:p7 {: RESULT = factory.buildDecProc(p2, p4, p7); :}
+;
+
+declaraFuncao ::=
+    T_FUNCTION T_IDENT:p2 T_ABRE_PARENTESES lstParamFunc:p4 T_FECHA_PARENTESES T_DOIS_PONTOS tipo:p7 T_PONTO_E_VIRGULA blocoSub:p9 {: RESULT = factory.buildDecFunc(p2, p4, p9, p7); :}
+;
+
+lstParamFunc ::=
+    lstParamFunc:p1 T_VIRGULA decParamFunc:p3 {: RESULT = factory.buildLstParam(p1, p3); :}
+    | decParamFunc:p1 {: RESULT = factory.buildLstParam(null, p1); :}
+;
+
+decParamFunc ::=
+    T_IDENT:p1 T_DOIS_PONTOS tipo:p3 {: RESULT = factory.buildParamDecVar(p1, p3); :}
 ;
 
 comando_composto ::=

@@ -9,8 +9,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @AllArgsConstructor
-public class Bloco {
+public class BlocoSub {
     private List<DecVar> decVar;
-    private List<Comando> decSub;
     private List<Comando> cmdComp;
 }

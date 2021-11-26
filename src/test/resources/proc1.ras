@@ -1,0 +1,21 @@
+program procPassRef;
+   var k: integer;
+
+procedure proc1(n: integer, g: integer);
+  var h:integer;
+begin
+  h := n + g;
+  write(h);
+end
+
+procedure proc2(n: integer);
+  var w:integer;
+begin
+  w := n * g;
+  write(w);
+end
+
+begin
+  k := 0;
+  proc1(3, k);
+end.

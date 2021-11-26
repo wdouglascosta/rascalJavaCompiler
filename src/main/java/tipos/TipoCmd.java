@@ -7,5 +7,7 @@ public enum TipoCmd {
     FINAL,
     CHAMADA_FUNC,
     CMD_IF,
+    DEC_PROC,
+    DEC_FUNC,
     CMD_WHILE;
 }

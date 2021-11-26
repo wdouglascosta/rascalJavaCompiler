@@ -6,6 +6,7 @@ import java.util.List;
 import core.LexerToken;
 import core.Terminal;
 import tipos.Bloco;
+import tipos.BlocoSub;
 import tipos.CmdAtrib;
 import tipos.CmdChamaFunc;
 import tipos.CmdExpArit;
@@ -13,6 +14,8 @@ import tipos.CmdExpBin;
 import tipos.CmdIf;
 import tipos.CmdWhile;
 import tipos.Comando;
+import tipos.DecFunc;
+import tipos.DecProc;
 import tipos.DecVar;
 import tipos.TpDecVar;
 
@@ -23,6 +26,34 @@ public class NodeFactory {
             list = new ArrayList();
         }
         list.add(ident);
+        return list;
+    }
+
+    public List<Comando> buildLstDecSub(List<Comando> list, Comando decSub){
+        if (list == null){
+            list = new ArrayList();
+        }
+        list.add(decSub);
+        return list;
+    }
+
+    public DecProc buildDecProc(LexerToken ident, List<DecVar> params, BlocoSub bloco){
+        return new DecProc(ident, params, bloco);
+    }
+
+    public DecFunc buildDecFunc(LexerToken ident, List<DecVar> params, BlocoSub bloco, LexerToken tipoRetorno){
+        return new DecFunc(ident, params, bloco, tipoRetorno);
+    }
+
+    public DecVar buildParamDecVar(LexerToken ident, LexerToken tipo){
+        return new DecVar(ident, tipo);
+    }
+
+    public List<DecVar> buildLstParam(List<DecVar> list, DecVar decVar){
+        if (list == null){
+            list = new ArrayList();
+        }
+        list.add(decVar);
         return list;
     }
 
@@ -48,8 +79,12 @@ public class NodeFactory {
         return result;
     }
 
-    public Bloco buildBloco(List<DecVar> decVar, Object decSub, List<Comando> cmdComp){
+    public Bloco buildBloco(List<DecVar> decVar, List<Comando> decSub, List<Comando> cmdComp){
         return new Bloco(decVar, decSub, cmdComp);
+    }
+
+    public BlocoSub buildBlocoSub(List<DecVar> decVar, List<Comando> cmdComp){
+        return new BlocoSub(decVar, cmdComp);
     }
 
     public Comando buildExpArit(Comando term1, Comando term2, Terminal operacao){

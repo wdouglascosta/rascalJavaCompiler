@@ -250,7 +250,9 @@ public class GeradorCodMepa {
         if (cmdChamaFunc.getNomeFunc().getVal().equals("read")){
             for (Comando cmd : cmdChamaFunc.getParams()) {
 
-                sb.append(DTAB).append(LEIT).append(LIN);
+                sb.append(DTAB)
+                        .append(LEIT)
+                        .append(LIN);
                 genARMZ((LexerToken) cmd);
             }
 
