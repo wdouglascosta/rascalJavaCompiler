@@ -1,7 +1,8 @@
 program funcaoSimples;
   var x, k: integer;
 
-  function soma(a: integer, b: integer): integer;
+  function fun1(a: integer, b: integer): integer;
+  var soma: integer;
   begin
     soma := a + b;
   end
@@ -13,23 +14,25 @@ program funcaoSimples;
     write(h);
   end
 
-  function soma(a: integer, b: integer): integer;
-  var t:integer;
+  function fun2(r: integer, s: integer): integer;
+  var t :integer;
   begin
-    t := a div b;
+    t := t div s;
+    fun1(r, t);
   end
 
   procedure proc2(n: integer);
-    var w:integer;
+    var w, g:integer;
   begin
     w := n * g;
     write(w);
   end
 
 begin
-  x := soma(5, 10);
+  x := fun1(5, 10);
   write(x);
   k := 0;
+  fun2(1, x);
   proc1(3, k);
-  proc2(3, k);
+  proc2(5);
 end.

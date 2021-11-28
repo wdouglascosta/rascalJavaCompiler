@@ -30,6 +30,9 @@ public class NodeFactory {
     }
 
     public List<Comando> buildLstDecSub(List<Comando> list, Comando decSub){
+        if(decSub == null){
+            return null;
+        }
         if (list == null){
             list = new ArrayList();
         }

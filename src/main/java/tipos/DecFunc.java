@@ -11,6 +11,7 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 public class DecFunc implements Comando {
+
     private LexerToken ident;
     private List<DecVar> params;
     private BlocoSub bloco;

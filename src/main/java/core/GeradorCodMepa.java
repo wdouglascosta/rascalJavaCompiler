@@ -49,6 +49,7 @@ public class GeradorCodMepa {
     private static final String DSVF = "DSVF";
 
     private Map<String, VarTabSim> tabSimbolos;
+    private Map<String, TabSimSub> interfaceSubs;
 
     private int labelCounter = 0;
 
@@ -58,9 +59,10 @@ public class GeradorCodMepa {
         return s;
     }
 
-    public GeradorCodMepa(Map<String, VarTabSim> tabSimbolos) {
+    public GeradorCodMepa(TabSimbolos tabSimbolos) {
 
-        this.tabSimbolos = tabSimbolos;
+        this.tabSimbolos = tabSimbolos.getTabelaSimbolosGlobal();
+        this.interfaceSubs = tabSimbolos.getInterfaceSubs();
     }
 
     StringBuilder sb = new StringBuilder();
@@ -70,9 +72,9 @@ public class GeradorCodMepa {
         genDecVar(tabSimbolos);
         sb.append(DTAB);
         sb.append(DSVS).append(TAB).append("R00").append(LIN);
-        sb.append("R00:").append(TAB).append(NADA).append(LIN);
 
         genDecSub(bloco.getDecSub());
+        sb.append("R00:").append(TAB).append(NADA).append(LIN);
         genCmdComp(bloco.getCmdComp());
 
         sb.append(DTAB).append(DMEM).append(TAB).append(tabSimbolos.size()).append(LIN);
@@ -82,7 +84,7 @@ public class GeradorCodMepa {
     }
 
     private void genCmdComp(List<Comando> cmdComp) throws ErroGeradorCodException {
-        cmdComp.size();
+
         for (Comando cmd: cmdComp) {
             switch (cmd.getTipo()){
                 case EXP_ARIT:

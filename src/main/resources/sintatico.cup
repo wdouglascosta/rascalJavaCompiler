@@ -155,7 +155,8 @@ secao_declara_subs ::=
 ;
 
 decSubs ::=
-    declaraProcedimento:p1     {: RESULT = p1; :}
+
+    | declaraProcedimento:p1     {: RESULT = p1; :}
     | declaraFuncao:p1         {: RESULT = p1; :}
 ;
 

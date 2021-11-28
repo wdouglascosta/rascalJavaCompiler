@@ -14,6 +14,8 @@ import tipos.CmdExpBin;
 import tipos.CmdIf;
 import tipos.CmdWhile;
 import tipos.Comando;
+import tipos.DecFunc;
+import tipos.DecProc;
 import tipos.DecVar;
 import tipos.TipoCmd;
 import utils.ErroSemanticoException;
@@ -23,21 +25,23 @@ public class Semantico {
 
     private static final String WRITE_FUNC = "write";
     private static final String READ_FUNC = "read";
-    Map<String, VarTabSim> tabelaSimbolos = new HashMap<String, VarTabSim>();
     private int errorCounter = 0;
+    private int enderecoSubCounter = 1;
+    private Map<String, TabSimSub> interfaceSubs = new HashMap<>();
 
-    public Map<String, VarTabSim> run(Bloco program) throws ErroSemanticoException {
+    public TabSimbolos run(Bloco program) throws ErroSemanticoException {
 
+        Map<String, VarTabSim> tabelaSimbolosGlobal = null;
         if (program.getDecVar() != null) {
-            processDecVar(program.getDecVar());
+            tabelaSimbolosGlobal = processDecVar(program.getDecVar());
         }
 
         if (program.getDecSub() != null) {
-            // implement
+            processDecSub(program.getDecSub());
         }
 
         if (program.getCmdComp() != null) {
-            processCmdComp(program.getCmdComp());
+            processCmdComp(program.getCmdComp(), tabelaSimbolosGlobal);
         }
 
         if (errorCounter > 0) {
@@ -45,81 +49,183 @@ public class Semantico {
         }
         System.out.println("Sucesso!");
 
-        return tabelaSimbolos;
+        return new TabSimbolos(interfaceSubs, tabelaSimbolosGlobal);
     }
 
-    private void processCmdComp(List<Comando> cmdComp) {
+    private void processDecSub(List<Comando> decSub) {
 
-        for (Comando cmd : cmdComp) {
-            switch (cmd.getTipo()) {
-                case EXP_ARIT:
-                    validateExpArit((CmdExpArit) cmd);
+        for (Comando sub : decSub) {
+            switch (sub.getTipo()) {
+                case DEC_FUNC:
+                    validateDecFunc((DecFunc) sub);
                     break;
-                case ATRIBUICAO:
-                    validateAtribuicao((CmdAtrib) cmd);
-                    break;
-                case CHAMADA_FUNC:
-                    validateChamaFunc((CmdChamaFunc) cmd);
-                    break;
-                case CMD_IF:
-                    validateCmdIf((CmdIf) cmd);
-                    break;
-                case CMD_WHILE:
-                    validateCmdWhile((CmdWhile) cmd);
+                case DEC_PROC:
+                    validateDecProc((DecProc) sub);
                     break;
             }
         }
 
     }
 
-    private void validateCmdWhile(CmdWhile cmd) {
-        validateExpBin(cmd.getCondicao());
-        processCmdComp(cmd.getCmdComp());
+    private void validateDecProc(DecProc decProc) {
+
+        Map<String, VarTabSim> tabelaSimDecVar = processDecVar(decProc.getBloco().getDecVar());
+        Map<String, VarTabSim> tabSimDecParam = processDecVar(decProc.getParams());
+        Map<String, VarTabSim> tabSimbLocal = mergeTabSim(tabelaSimDecVar, tabSimDecParam);
+        processCmdComp(decProc.getBloco().getCmdComp(), tabSimbLocal);
+
+        ProcTabSim procTabSim = new ProcTabSim(decProc.getParams(), tabSimbLocal, getNewSubLabel());
+        interfaceSubs.put(decProc.getIdent().getVal(), procTabSim);
     }
 
-    private void validateCmdIf(CmdIf cmd) {
-        validateExpBin(cmd.getCondicao());
-        processCmdComp(cmd.getCmdComp());
+    private void validateDecFunc(DecFunc decFunc) {
+
+        Map<String, VarTabSim> tabelaSimDecVar = processDecVar(decFunc.getBloco().getDecVar());
+        Map<String, VarTabSim> tabSimDecParam = processDecVar(decFunc.getParams());
+        Map<String, VarTabSim> tabSimbLocal = mergeTabSim(tabelaSimDecVar, tabSimDecParam);
+        processCmdComp(decFunc.getBloco().getCmdComp(), tabSimbLocal);
+
+        FuncTabSim funcTabSim = new FuncTabSim(decFunc.getParams(), getVarType(decFunc.getTipoRetorno()), tabSimbLocal,
+                getNewSubLabel());
+        interfaceSubs.put(decFunc.getIdent().getVal(), funcTabSim);
 
     }
 
-    private void validateExpBin(CmdExpBin condicao) {
+    private Map<String, VarTabSim> mergeTabSim(Map<String, VarTabSim> tabelaSimDecVar,
+            Map<String, VarTabSim> tabSimDecParam) {
 
-        validateBinOpr(condicao.getEsq());
-        validateBinOpr(condicao.getDir());
+        Map<String, VarTabSim> toReturn = new HashMap<>();
+
+        for (Map.Entry<String, VarTabSim> entry : tabelaSimDecVar.entrySet()) {
+            if (tabSimDecParam.containsKey(entry.getKey())) {
+                System.err.println("A variável '" + entry.getKey() + "' já existe no escopo como um parâmetro");
+                errorCounter++;
+            }
+            toReturn.put(entry.getKey(), entry.getValue());
+        }
+
+        for (Map.Entry<String, VarTabSim> entry : tabSimDecParam.entrySet()) {
+            int novoEnd = (entry.getValue().getEndereco() + 3) * -1;
+            entry.getValue().setEndereco(novoEnd);
+
+            toReturn.put(entry.getKey(), entry.getValue());
+        }
+        return toReturn;
+    }
+
+//    private void validateParams(List<DecVar> params) {
+//
+//        for (final DecVar decVar: params) {
+//            if(params.stream().filter(v -> v.getIdent().getVal().equals(decVar.getIdent().getVal())).count() > 1){
+//                System.err.println("Declaração de variáveis com o mesmo nome!");
+//                printLinha(decVar.getIdent());
+//                errorCounter++;
+//            }
+//        }
+//
+//    }
+
+    private void processCmdComp(List<Comando> cmdComp, Map<String, VarTabSim> tabSimbolos) {
+
+        for (Comando cmd : cmdComp) {
+            switch (cmd.getTipo()) {
+                case EXP_ARIT:
+                    validateExpArit((CmdExpArit) cmd, tabSimbolos);
+                    break;
+                case ATRIBUICAO:
+                    validateAtribuicao((CmdAtrib) cmd, tabSimbolos);
+                    break;
+                case CHAMADA_FUNC:
+                    validateChamaFunc((CmdChamaFunc) cmd, tabSimbolos);
+                    break;
+                case CMD_IF:
+                    validateCmdIf((CmdIf) cmd, tabSimbolos);
+                    break;
+                case CMD_WHILE:
+                    validateCmdWhile((CmdWhile) cmd, tabSimbolos);
+                    break;
+            }
+        }
 
     }
 
-    private void validateBinOpr(Comando param) {
+    private void validateCmdWhile(CmdWhile cmd, Map<String, VarTabSim> tabSimbolos) {
 
-        switch(param.getTipo()){
+        validateExpBin(cmd.getCondicao(), tabSimbolos);
+        processCmdComp(cmd.getCmdComp(), tabSimbolos);
+    }
+
+    private void validateCmdIf(CmdIf cmd, Map<String, VarTabSim> tabSimbolos) {
+
+        validateExpBin(cmd.getCondicao(), tabSimbolos);
+        processCmdComp(cmd.getCmdComp(), tabSimbolos);
+
+    }
+
+    private void validateExpBin(CmdExpBin condicao, Map<String, VarTabSim> tabSimbolos) {
+
+        validateBinOpr(condicao.getEsq(), tabSimbolos);
+        validateBinOpr(condicao.getDir(), tabSimbolos);
+
+    }
+
+    private void validateBinOpr(Comando param, Map<String, VarTabSim> tabSimbolos) {
+
+        switch (param.getTipo()) {
             case EXP_ARIT:
-                validateExpArit((CmdExpArit) param);
+                validateExpArit((CmdExpArit) param, tabSimbolos);
                 break;
             case CHAMADA_FUNC:
-                validateChamaFunc((CmdChamaFunc) param);
+                validateChamaFunc((CmdChamaFunc) param, tabSimbolos);
                 break;
             case FINAL:
                 LexerToken finalToken = (LexerToken) param;
                 if (!Utils.isAnInteger(finalToken)) {
-                    checkIntVar(finalToken);
+                    checkIntVar(finalToken, tabSimbolos);
                 }
                 break;
         }
     }
 
-    private void validateChamaFunc(CmdChamaFunc cmd) {
+    private void validateChamaFunc(CmdChamaFunc cmd, Map<String, VarTabSim> tabSimbolos) {
 
-        if(cmd.getNomeFunc().getVal().equals(READ_FUNC)){
+        if (cmd.getNomeFunc().getVal().equals(READ_FUNC) || cmd.getNomeFunc().getVal().equals(WRITE_FUNC)) {
+
+            validateIOFunc(cmd, tabSimbolos);
+        } else {
+            if (!interfaceSubs.containsKey(cmd.getNomeFunc().getVal())) {
+                System.err.println("Função ou procedimento '" + cmd.getNomeFunc().getVal() + "' não declarado");
+                printLinha(cmd.getNomeFunc());
+                errorCounter++;
+            }
+            TabSimSub tabSimSub = interfaceSubs.get(cmd.getNomeFunc().getVal());
+
+            if (cmd.getParams().size() != tabSimSub.getNumParams()) {
+                System.err.println(
+                        "Chamada de '" + tabSimSub.getTipoSim() + "' com número inválido de parâmetros '" + cmd
+                                .getNomeFunc().getVal() + "' (esperado(s): " + tabSimSub.getNumParams()
+                                + " parâmetro(s))");
+                printLinha(cmd.getNomeFunc());
+                errorCounter++;
+            }
+
+            validateParams(tabSimbolos, cmd.getParams());
+        }
+
+    }
+
+    private void validateIOFunc(CmdChamaFunc cmd, Map<String, VarTabSim> tabSimbolos) {
+
+        if (cmd.getNomeFunc().getVal().equals(READ_FUNC)) {
             List<Comando> params = cmd.getParams();
             for (Comando param : params) {
                 if (param.getTipo() == TipoCmd.FINAL) {
 
-                        LexerToken finalToken = (LexerToken) param;
-                        if (!Utils.isAnInteger(finalToken)) {
-                            checkIntVar(finalToken);
-                        }
-                        break;
+                    LexerToken finalToken = (LexerToken) param;
+                    if (!Utils.isAnInteger(finalToken)) {
+                        checkIntVar(finalToken, tabSimbolos);
+                    }
+                    break;
                 } else {
                     System.err.println("A função 'read' não aceita expressões compostas");
                     printLinha(cmd.getNomeFunc());
@@ -131,25 +237,29 @@ public class Semantico {
 
         if (cmd.getNomeFunc().getVal().equals(WRITE_FUNC)) {
             List<Comando> params = cmd.getParams();
-            for (Comando param : params) {
-                switch (param.getTipo()) {
-                    case EXP_ARIT:
-                        validateExpArit((CmdExpArit) param);
-                        break;
-                    case FINAL:
-                        LexerToken finalToken = (LexerToken) param;
-                        if (!Utils.isAnInteger(finalToken)) {
-                            checkIntVar(finalToken);
-                        }
-                        break;
-                }
-
-            }
+            validateParams(tabSimbolos, params);
         }
-
     }
 
-    private void validateAtribuicao(CmdAtrib cmd) {
+    private void validateParams(Map<String, VarTabSim> tabSimbolos, List<Comando> params) {
+
+        for (Comando param : params) {
+            switch (param.getTipo()) {
+                case EXP_ARIT:
+                    validateExpArit((CmdExpArit) param, tabSimbolos);
+                    break;
+                case FINAL:
+                    LexerToken finalToken = (LexerToken) param;
+                    if (!Utils.isAnInteger(finalToken)) {
+                        checkIntVar(finalToken, tabSimbolos);
+                    }
+                    break;
+            }
+
+        }
+    }
+
+    private void validateAtribuicao(CmdAtrib cmd, Map<String, VarTabSim> tabSimbolos) {
 
         LexerToken variavel = cmd.getVariavel();
 //        if(isAnInteger(variavel)){
@@ -157,49 +267,52 @@ public class Semantico {
 //            printLinha(variavel);
 //            errorCounter++;
 //        }
-        checkIntVar(variavel);
+        checkIntVar(variavel, tabSimbolos);
         Comando expressao = cmd.getExpressao();
 
-        if (expressao.getTipo() == TipoCmd.EXP_ARIT) {
-
-            validateExpArit((CmdExpArit) expressao);
-        }
-        if (expressao.getTipo() == TipoCmd.FINAL) {
-            if (!Utils.isAnInteger((LexerToken) expressao)) {
-                checkIntVar((LexerToken) expressao);
-            }
+        switch (expressao.getTipo()) {
+            case EXP_ARIT:
+                validateExpArit((CmdExpArit) expressao, tabSimbolos);
+                break;
+            case FINAL:
+                if (!Utils.isAnInteger((LexerToken) expressao)) {
+                    checkIntVar((LexerToken) expressao, tabSimbolos);
+                }
+                break;
+            case CHAMADA_FUNC:
+                validateChamaFunc((CmdChamaFunc) expressao, tabSimbolos);
         }
 
     }
 
-    private void validateExpArit(CmdExpArit cmd) {
+    private void validateExpArit(CmdExpArit cmd, Map<String, VarTabSim> tabSimbolos) {
 
         if (!Utils.isAnInteger((LexerToken) cmd.getEsq())) {
-            checkIntVar((LexerToken) cmd.getEsq());
+            checkIntVar((LexerToken) cmd.getEsq(), tabSimbolos);
         }
 
         if (cmd.getDir().getTipo() != TipoCmd.FINAL) {
-            validateExpArit((CmdExpArit) cmd.getDir());
+            validateExpArit((CmdExpArit) cmd.getDir(), tabSimbolos);
         } else {
             if (!Utils.isAnInteger((LexerToken) cmd.getDir())) {
-                checkIntVar((LexerToken) cmd.getDir());
+                checkIntVar((LexerToken) cmd.getDir(), tabSimbolos);
             }
         }
 
     }
 
-    private void checkIntVar(LexerToken token) {
+    private void checkIntVar(LexerToken token, Map<String, VarTabSim> tabSimbolos) {
 
-        if (checkVarExists(token) && tabelaSimbolos.get(token.getVal()).getTipo() != VarType.INTEGER) {
+        if (checkVarExists(token, tabSimbolos) && tabSimbolos.get(token.getVal()).getTipo() != VarType.INTEGER) {
             System.err.println("A variavel '" + token.getVal() + "' não aceita operações aritméticas");
             printLinha(token);
             errorCounter++;
         }
     }
 
-    private Boolean checkVarExists(LexerToken token) {
-
-        if (!tabelaSimbolos.containsKey(token.getVal())) {
+    private Boolean checkVarExists(LexerToken token, Map<String, VarTabSim> tabSimbolos) {
+        //TODO adicionar checagem para escopo global
+        if (!tabSimbolos.containsKey(token.getVal())) {
             System.err.println("Variável '" + token.getVal() + "' não foi declarada no escopo");
             printLinha(token);
             errorCounter++;
@@ -208,10 +321,11 @@ public class Semantico {
         return true;
     }
 
-    private void processDecVar(List<DecVar> lstDecVar) {
+    private Map<String, VarTabSim> processDecVar(List<DecVar> lstDecVar) {
 
-        Set<String> unique = new HashSet<String>();
-        Set<DecVar> duplicatedVars = new HashSet<DecVar>();
+        Map<String, VarTabSim> tabSimbolos = new HashMap<>();
+        Set<String> unique = new HashSet<>();
+        Set<DecVar> duplicatedVars = new HashSet<>();
         Integer address = 0;
         for (DecVar var : lstDecVar) {
             //check duplicated name declarations
@@ -219,7 +333,7 @@ public class Semantico {
                 duplicatedVars.add(var);
             }
             //check type declaration
-            tabelaSimbolos.put(var.getIdent().getVal(), new VarTabSim(getVarType(var), address));
+            tabSimbolos.put(var.getIdent().getVal(), new VarTabSim(getVarType(var.getTipo()), address));
             address++;
         }
         if (duplicatedVars.size() > 0) {
@@ -232,20 +346,28 @@ public class Semantico {
             }
             errorCounter++;
         }
+        return tabSimbolos;
 
     }
 
-    private VarType getVarType(DecVar var) {
+    private VarType getVarType(LexerToken var) {
 
         try {
 
-            return VarType.valueOf(var.getTipo().getVal().toUpperCase());
+            return VarType.valueOf(var.getVal().toUpperCase());
         } catch (IllegalArgumentException e) {
-            System.err.println("Tipo '" + var.getTipo().getVal() + "' não suportado pela linguagem!");
-            printLinha(var.getTipo());
+            System.err.println("Tipo '" + var.getVal() + "' não suportado pela linguagem!");
+            printLinha(var);
             errorCounter++;
             return null;
         }
+    }
+
+    private String getNewSubLabel() {
+
+        String s = "R" + enderecoSubCounter;
+        enderecoSubCounter++;
+        return s;
     }
 
     private void printLinha(LexerToken tipo) {
