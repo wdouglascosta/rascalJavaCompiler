@@ -7,5 +7,6 @@ public interface TabSimSub {
 
     TipoTabSim getTipoSim();
     Integer getNumParams();
+    String getEndereco();
 
 }

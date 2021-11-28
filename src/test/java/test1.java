@@ -34,7 +34,7 @@ public class test1 {
     public void teste2() throws Exception {
         String sourceCode = System.getProperty("user.dir") + "/src/test/resources/";
         System.out.println(sourceCode);
-        generatedSources.Sintatico sintatico = new generatedSources.Sintatico(new generatedSources.Lexico(new FileReader(sourceCode + "funcao2.ras")));
+        generatedSources.Sintatico sintatico = new generatedSources.Sintatico(new generatedSources.Lexico(new FileReader(sourceCode + "proc1.ras")));
         Semantico semantico = new Semantico();
         Symbol parse = sintatico.parse();
         Bloco value = (Bloco) parse.value;

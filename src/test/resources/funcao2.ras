@@ -2,7 +2,7 @@ program funcaoSimples;
   var x, k: integer;
 
   function fun1(a: integer, b: integer): integer;
-  var soma: integer;
+  var soma, g, h, j: integer;
   begin
     soma := a + b;
   end
@@ -15,7 +15,7 @@ program funcaoSimples;
   end
 
   function fun2(r: integer, s: integer): integer;
-  var t :integer;
+  var t, u, v :integer;
   begin
     t := t div s;
     fun1(r, t);
@@ -30,7 +30,10 @@ program funcaoSimples;
 
 begin
   x := fun1(5, 10);
-  write(x);
+  if x < 5 then
+    begin
+      write(x);
+    end
   k := 0;
   fun2(1, x);
   proc1(3, k);

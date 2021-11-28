@@ -105,7 +105,7 @@ public class Semantico {
         }
 
         for (Map.Entry<String, VarTabSim> entry : tabSimDecParam.entrySet()) {
-            int novoEnd = (entry.getValue().getEndereco() + 3) * -1;
+            int novoEnd = (entry.getValue().getEndereco() + 4) * -1;
             entry.getValue().setEndereco(novoEnd);
 
             toReturn.put(entry.getKey(), entry.getValue());

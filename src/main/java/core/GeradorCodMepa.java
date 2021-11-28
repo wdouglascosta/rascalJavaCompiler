@@ -1,7 +1,5 @@
 package core;
 
-import static tipos.TipoCmd.ATRIBUICAO;
-import static tipos.TipoCmd.CHAMADA_FUNC;
 import static tipos.TipoCmd.FINAL;
 
 import java.util.List;
@@ -15,7 +13,8 @@ import tipos.CmdExpBin;
 import tipos.CmdIf;
 import tipos.CmdWhile;
 import tipos.Comando;
-import tipos.TipoCmd;
+import tipos.DecFunc;
+import tipos.DecProc;
 import utils.ErroGeradorCodException;
 import utils.Utils;
 
@@ -47,11 +46,13 @@ public class GeradorCodMepa {
     private static final String CMIG = "CMIG";
     private static final String CMDG = "CMDG";
     private static final String DSVF = "DSVF";
-
+    private static final String ENPR = "ENPR";
+    private static final String RTPR = "RTPR";
+    private static final String CHPR = "CHPR";
     private Map<String, VarTabSim> tabSimbolos;
     private Map<String, TabSimSub> interfaceSubs;
 
-    private int labelCounter = 0;
+    private int labelCounter;
 
     private String getNewLabel(){
         String s = "L" + labelCounter;
@@ -63,6 +64,7 @@ public class GeradorCodMepa {
 
         this.tabSimbolos = tabSimbolos.getTabelaSimbolosGlobal();
         this.interfaceSubs = tabSimbolos.getInterfaceSubs();
+//        this.labelCounter = this.interfaceSubs.size() + 1;
     }
 
     StringBuilder sb = new StringBuilder();
@@ -75,7 +77,7 @@ public class GeradorCodMepa {
 
         genDecSub(bloco.getDecSub());
         sb.append("R00:").append(TAB).append(NADA).append(LIN);
-        genCmdComp(bloco.getCmdComp());
+        genCmdComp(bloco.getCmdComp(), null);
 
         sb.append(DTAB).append(DMEM).append(TAB).append(tabSimbolos.size()).append(LIN);
         sb.append(DTAB).append(PARA);
@@ -83,31 +85,31 @@ public class GeradorCodMepa {
         System.out.println(sb.toString());
     }
 
-    private void genCmdComp(List<Comando> cmdComp) throws ErroGeradorCodException {
+    private void genCmdComp(List<Comando> cmdComp, Map<String, VarTabSim> tabSim) throws ErroGeradorCodException {
 
         for (Comando cmd: cmdComp) {
             switch (cmd.getTipo()){
                 case EXP_ARIT:
-                    genExpArit((CmdExpArit) cmd);
+                    genExpArit((CmdExpArit) cmd, tabSim);
                     break;
                 case ATRIBUICAO:
-                    genAtribuicao((CmdAtrib) cmd);
+                    genAtribuicao((CmdAtrib) cmd, tabSim);
                     break;
                 case CHAMADA_FUNC:
-                    genChamaFunc((CmdChamaFunc) cmd);
+                    genChamaFunc((CmdChamaFunc) cmd, tabSim);
                     break;
                 case CMD_IF:
-                    genIf((CmdIf) cmd);
+                    genIf((CmdIf) cmd, tabSim);
                     break;
                 case CMD_WHILE:
-                    genWhile((CmdWhile) cmd);
+                    genWhile((CmdWhile) cmd, tabSim);
                     break;
             }
         }
 
     }
 
-    private void genWhile(CmdWhile cmd) throws ErroGeradorCodException {
+    private void genWhile(CmdWhile cmd, Map<String, VarTabSim> tabSim) throws ErroGeradorCodException {
         String headWhile = getNewLabel();
         String labelIfFalse = getNewLabel();
         sb.append(headWhile)
@@ -117,14 +119,14 @@ public class GeradorCodMepa {
                 .append(LIN);
         CmdExpBin condicao = cmd.getCondicao();
         if (condicao.getEsq().getTipo() == FINAL && condicao.getDir().getTipo() == FINAL){
-            genCondicaoSimples(condicao);
+            genCondicaoSimples(condicao, tabSim);
         }
         sb.append(DTAB)
                 .append(DSVF)
                 .append(TAB)
                 .append(labelIfFalse)
                 .append(LIN);
-        genCmdComp(cmd.getCmdComp());
+        genCmdComp(cmd.getCmdComp(), tabSim);
         sb.append(DTAB)
                 .append(DSVS)
                 .append(TAB)
@@ -138,16 +140,16 @@ public class GeradorCodMepa {
 
     }
 
-    private void genIf(CmdIf cmd) throws ErroGeradorCodException {
+    private void genIf(CmdIf cmd, Map<String, VarTabSim> tabSim) throws ErroGeradorCodException {
         String labelIfFalse = getNewLabel();
         String labelElse = "";
         CmdExpBin condicao = cmd.getCondicao();
         Boolean isElse = cmd.getCmdElse() != null;
         if (condicao.getEsq().getTipo() != FINAL && condicao.getDir().getTipo() != FINAL){
-            //TODO gerar if com condição composta dos dos lados
+            //TODO gerar if com condição composta dos dois lados
         }
         if (condicao.getEsq().getTipo() == FINAL && condicao.getDir().getTipo() == FINAL){
-            genCondicaoSimples(condicao);
+            genCondicaoSimples(condicao, tabSim);
         }
 
         sb.append(DTAB)
@@ -155,7 +157,7 @@ public class GeradorCodMepa {
                 .append(TAB)
                 .append(labelIfFalse)
                 .append(LIN);
-        genCmdComp(cmd.getCmdComp());
+        genCmdComp(cmd.getCmdComp(), tabSim);
         if(isElse) {
             labelElse = getNewLabel();
             sb.append(DTAB)
@@ -170,7 +172,7 @@ public class GeradorCodMepa {
                 .append(NADA)
                 .append(LIN);
         if(isElse){
-            genCmdComp(cmd.getCmdElse());
+            genCmdComp(cmd.getCmdElse(), tabSim);
             sb.append(labelElse)
                     .append(":")
                     .append(DTAB)
@@ -179,10 +181,10 @@ public class GeradorCodMepa {
         }
     }
 
-    private void genCondicaoSimples(CmdExpBin condicao) {
+    private void genCondicaoSimples(CmdExpBin condicao, Map<String, VarTabSim> tabSim) {
 
-            genLexerToken((LexerToken) condicao.getEsq());
-            genLexerToken((LexerToken) condicao.getDir());
+            genLexerToken((LexerToken) condicao.getEsq(), tabSim);
+            genLexerToken((LexerToken) condicao.getDir(), tabSim);
             genOpLogico(condicao.getOperacao());
 
     }
@@ -211,65 +213,70 @@ public class GeradorCodMepa {
 
     }
 
-    private void genAtribuicao(CmdAtrib cmd) throws ErroGeradorCodException {
+    private void genAtribuicao(CmdAtrib cmd, Map<String, VarTabSim> tabSim) throws ErroGeradorCodException {
 
         switch(cmd.getExpressao().getTipo()){
             case FINAL:
                 LexerToken expressao = (LexerToken) cmd.getExpressao();
-                genLexerToken(expressao);
-                genARMZ(cmd.getVariavel());
+                genLexerToken(expressao, tabSim);
+                genARMZ(cmd.getVariavel(), tabSim);
                 break;
             case EXP_ARIT:
-                genExpArit((CmdExpArit) cmd.getExpressao());
-                genARMZ(cmd.getVariavel());
+                genExpArit((CmdExpArit) cmd.getExpressao(), tabSim);
+                genARMZ(cmd.getVariavel(), tabSim);
                 break;
             case CHAMADA_FUNC:
-                genChamaFunc((CmdChamaFunc) cmd.getExpressao());
+                genChamaFunc((CmdChamaFunc) cmd.getExpressao(), tabSim);
 
         }
 
     }
 
-    private void genARMZ(LexerToken cmd) {
+    private void genARMZ(LexerToken cmd, Map<String, VarTabSim> tabSim) {
 
         sb.append(DTAB)
                 .append(ARMZ)
                 .append(TAB)
-                .append(calcEndereco(cmd))
+                .append(calcEndereco(cmd, tabSim))
                 .append(LIN);
     }
 
-    private void genChamaFunc(CmdChamaFunc cmdChamaFunc) throws ErroGeradorCodException {
+    private void genChamaFunc(CmdChamaFunc cmdChamaFunc, Map<String, VarTabSim> tabSim) throws ErroGeradorCodException {
 
         String nomeFunc = cmdChamaFunc.getNomeFunc().getVal();
         if (nomeFunc.equals("write") || nomeFunc.equals("read")){
-            genIOFunc(cmdChamaFunc);
+            genIOFunc(cmdChamaFunc, tabSim);
+            return;
         }
+
+        for(Comando cmd : cmdChamaFunc.getParams()){
+            //empilha parâmetros
+            genParamChamFunc(cmd, tabSim);
+        }
+        String endereco = interfaceSubs.get(cmdChamaFunc.getNomeFunc().getVal()).getEndereco();
+        String k = tabSim == null ? "0" : "1"; //caso tabSim seja nulo, significa que a chamada vem do programa principal, senão, de um subprograma
+        sb.append(DTAB)
+                .append(CHPR)
+                .append(TAB)
+                .append(endereco + ", "+ k)
+                .append(LIN);
 
     }
 
-    private void genIOFunc(CmdChamaFunc cmdChamaFunc) throws ErroGeradorCodException {
+    private void genIOFunc(CmdChamaFunc cmdChamaFunc, Map<String, VarTabSim> tabSim) throws ErroGeradorCodException {
         if (cmdChamaFunc.getNomeFunc().getVal().equals("read")){
             for (Comando cmd : cmdChamaFunc.getParams()) {
 
                 sb.append(DTAB)
                         .append(LEIT)
                         .append(LIN);
-                genARMZ((LexerToken) cmd);
+                genARMZ((LexerToken) cmd, tabSim);
             }
 
 
         } else if (cmdChamaFunc.getNomeFunc().getVal().equals("write")){
             for(Comando cmd : cmdChamaFunc.getParams()){
-                switch (cmd.getTipo()){
-                    case EXP_ARIT:
-                        genExpArit((CmdExpArit) cmd);
-                        break;
-                    case FINAL:
-                        genLexerToken((LexerToken) cmd);
-                    case CHAMADA_FUNC:
-                        //TODO implementar chamada de função como parametro
-                }
+                genParamChamFunc(cmd, tabSim);
                 sb.append(DTAB).append(IMPR).append(LIN);
             }
 
@@ -277,7 +284,20 @@ public class GeradorCodMepa {
 
     }
 
-    private void genLexerToken(LexerToken token) {
+    private void genParamChamFunc(Comando cmd, Map<String, VarTabSim> tabSim) throws ErroGeradorCodException {
+
+        switch (cmd.getTipo()){
+            case EXP_ARIT:
+                genExpArit((CmdExpArit) cmd, tabSim);
+                break;
+            case FINAL:
+                genLexerToken((LexerToken) cmd, tabSim);
+            case CHAMADA_FUNC:
+                //TODO implementar chamada de função como parametro
+        }
+    }
+
+    private void genLexerToken(LexerToken token, Map<String, VarTabSim> tabSim) {
 
         if (Utils.isAnInteger(token)){
             sb.append(DTAB)
@@ -289,26 +309,33 @@ public class GeradorCodMepa {
             sb.append(DTAB)
                     .append(CRVL)
                     .append(TAB)
-                    .append(calcEndereco(token))
+                    .append(calcEndereco(token, tabSim))
                     .append(LIN);
         }
     }
 
-    private String calcEndereco(LexerToken variavel) {
-        String deslocamento = "0"; //TODO calcular deslocamento
-
-        Integer endereco = tabSimbolos.get(variavel.getVal()).getEndereco();
+    private String calcEndereco(LexerToken variavel, Map<String, VarTabSim> tabSim) {
+        String deslocamento; //TODO calcular deslocamento
+        VarTabSim varTabSim;
+        if((tabSim != null) && (tabSim.containsKey(variavel.getVal()))){
+            varTabSim = tabSim.get(variavel.getVal());
+            deslocamento = "1";
+        } else {
+            varTabSim = tabSimbolos.get(variavel.getVal());
+            deslocamento = "0";
+        }
+        Integer endereco = varTabSim.getEndereco();
         return deslocamento + ", " + endereco;
     }
 
-    private void genExpArit(CmdExpArit cmd) throws ErroGeradorCodException {
+    private void genExpArit(CmdExpArit cmd, Map<String, VarTabSim> tabSim) throws ErroGeradorCodException {
         cmd.getOperacao();
         if(cmd.getEsq().getTipo() == FINAL && cmd.getDir().getTipo() == FINAL){
-            genLexerToken((LexerToken) cmd.getEsq());
-            genLexerToken((LexerToken) cmd.getDir());
+            genLexerToken((LexerToken) cmd.getEsq(), tabSim);
+            genLexerToken((LexerToken) cmd.getDir(), tabSim);
         } else {
-            genExpArit((CmdExpArit) cmd.getDir());
-            genLexerToken((LexerToken) cmd.getEsq());
+            genExpArit((CmdExpArit) cmd.getDir(), tabSim);
+            genLexerToken((LexerToken) cmd.getEsq(),tabSim);
         }
         putTerminal(cmd.getOperacao());
     }
@@ -337,13 +364,77 @@ public class GeradorCodMepa {
 
     }
 
-    private void genDecSub(Object decSub) {
+    private void genDecSub(List<Comando> decSub) throws ErroGeradorCodException {
+        for(Comando cmd : decSub){
+            switch(cmd.getTipo()){
+                case DEC_FUNC:
+                    genDecFunc((DecFunc) cmd);
+                    break;
+                case DEC_PROC:
+                    genDecProc((DecProc) cmd);
+                    break;
+            }
+        }
+    }
 
+    private void genDecFunc(DecFunc cmd) throws ErroGeradorCodException {
+
+        FuncTabSim funcTabSim = (FuncTabSim) interfaceSubs.get(cmd.getIdent().getVal());
+        int amemSize = cmd.getBloco().getDecVar().size();
+        genHeadBlocoSub(cmd.getIdent().getVal(), amemSize);
+        sb.append("/ bloco sub: "+ cmd.getIdent().getVal()).append(LIN);
+        genCmdComp(cmd.getBloco().getCmdComp(), funcTabSim.getTabSimbLocal());
+        genTailBlocoSub(amemSize);
+    }
+
+    private void genDecProc(DecProc cmd) throws ErroGeradorCodException {
+        ProcTabSim procTabSim = (ProcTabSim) interfaceSubs.get(cmd.getIdent().getVal());
+        int amemSize = cmd.getBloco().getDecVar().size();
+        genHeadBlocoSub(cmd.getIdent().getVal(), amemSize);
+        sb.append("/ bloco sub: "+ cmd.getIdent().getVal()).append(LIN);
+        genCmdComp(cmd.getBloco().getCmdComp(), procTabSim.getTabSimbLocal());
+        genTailBlocoSub(amemSize);
+    }
+
+    private void genHeadBlocoSub(String nomeSub, Integer decVarSize) {
+
+        TabSimSub tabSimSub = interfaceSubs.get(nomeSub);
+
+        sb.append(tabSimSub.getEndereco()+":")
+                .append(DTAB)
+                .append(ENPR)
+                .append(TAB)
+                .append("1")
+                .append(LIN);
+
+        genDecVar(decVarSize);
+
+    }
+
+    private void genTailBlocoSub(Integer decVarSize) {
+
+        sb.append(DTAB)
+                .append(DMEM)
+                .append(TAB)
+                .append(decVarSize)
+                .append(LIN);
+
+        sb.append(DTAB)
+                .append(RTPR)
+                .append(TAB)
+                .append("1, 1")
+                .append(LIN);
     }
 
     private void genDecVar(Map<String, VarTabSim> tabSimbolos) {
         sb.append(DTAB);
         sb.append(AMEM).append(TAB).append(tabSimbolos.size()).append(LIN);
+
+    }
+
+    private void genDecVar(int size) {
+        sb.append(DTAB);
+        sb.append(AMEM).append(TAB).append(size).append(LIN);
 
     }
 }

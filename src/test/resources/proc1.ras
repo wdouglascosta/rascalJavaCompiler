@@ -8,14 +8,8 @@ begin
   write(h);
 end
 
-procedure proc2(n: integer);
-  var w:integer;
 begin
-  w := n * g;
-  write(w);
-end
-
-begin
-  k := 0;
+  k := 5;
   proc1(3, k);
+  write(k);
 end.
