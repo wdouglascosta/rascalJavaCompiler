@@ -1,9 +1,6 @@
-package generatedSources;
+package genSources;
 import java_cup.runtime.*;
-import utils.RascalSymbol;
-import generatedSources.sym;
-import utils.*;
-import tipos.*;
+
 import core.*;
 
 %%

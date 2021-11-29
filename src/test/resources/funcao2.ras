@@ -17,7 +17,7 @@ program funcaoSimples;
   function fun2(r: integer, s: integer): integer;
   var t, u, v :integer;
   begin
-    t := t div s;
+    t := t div w;
     fun1(r, t);
   end
 

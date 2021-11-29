@@ -1,0 +1,18 @@
+program funcaoSimples;
+  var x, k: integer;
+
+  function fun1(a: integer, b: integer): integer;
+  var g, h, j: integer;
+  begin
+    fun1 := a + b;
+  end
+
+begin
+  x := fun1(5, 10);
+  if x < 5 then
+    begin
+      write(x);
+    end
+  k := 0;
+  fun1(1, x);
+end.

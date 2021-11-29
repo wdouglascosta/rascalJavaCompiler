@@ -196,6 +196,7 @@ public class Semantico {
                 System.err.println("Função ou procedimento '" + cmd.getNomeFunc().getVal() + "' não declarado");
                 printLinha(cmd.getNomeFunc());
                 errorCounter++;
+                return;
             }
             TabSimSub tabSimSub = interfaceSubs.get(cmd.getNomeFunc().getVal());
 

@@ -2,7 +2,6 @@ import utils.*;
 import tipos.*;
 import core.*;
 import java_cup.runtime.Symbol;
-import generatedSources.sym;
 import java.util.List;
 
 
@@ -115,7 +114,7 @@ non terminal BlocoSub blocoSub;
 start with programa;
 
 programa ::=
-	T_PROGRAM T_IDENT T_PONTO_E_VIRGULA bloco:p4 T_PONTO 		{: RESULT = p4; :}
+	T_PROGRAM T_IDENT:p2 T_PONTO_E_VIRGULA bloco:p4 T_PONTO 		{: RESULT = factory.setNomeDoPrograma(p2, p4); :}
 ;
 
 bloco ::=

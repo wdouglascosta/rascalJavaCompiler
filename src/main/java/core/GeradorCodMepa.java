@@ -69,18 +69,18 @@ public class GeradorCodMepa {
     }
 
     StringBuilder sb = new StringBuilder();
-    public void generate(Bloco bloco) throws ErroGeradorCodException {
+    public StringBuilder generate(Bloco bloco) throws ErroGeradorCodException {
         // write INPP ... PARA
         sb.append(DTAB).append(INPP).append(LIN);
         if(!tabSimbolos.isEmpty()){
             genDecVar(tabSimbolos);
         }
         sb.append(DTAB);
-        sb.append(DSVS).append(TAB).append("R00").append(LIN);
+        sb.append(DSVS).append(TAB).append("R0").append(LIN);
         if (bloco.getDecSub() != null){
             genDecSub(bloco.getDecSub());
         }
-        sb.append("R00:").append(TAB).append(NADA).append(LIN);
+        sb.append("R0:").append(TAB).append(NADA).append(LIN);
         if (bloco.getCmdComp() != null){
             genCmdComp(bloco.getCmdComp(), null);
         }
@@ -88,7 +88,8 @@ public class GeradorCodMepa {
         sb.append(DTAB).append(DMEM).append(TAB).append(tabSimbolos.size()).append(LIN);
         sb.append(DTAB).append(PARA);
 
-        System.out.println(sb.toString());
+        return sb;
+
     }
 
     private void genCmdComp(List<Comando> cmdComp, Map<String, VarTabSim> tabSim) throws ErroGeradorCodException {
@@ -332,7 +333,7 @@ public class GeradorCodMepa {
     }
 
     private String calcEndereco(LexerToken variavel, Map<String, VarTabSim> tabSim) {
-        String deslocamento; //TODO calcular deslocamento
+        String deslocamento;
         VarTabSim varTabSim;
         if((tabSim != null) && (tabSim.containsKey(variavel.getVal()))){
             varTabSim = tabSim.get(variavel.getVal());

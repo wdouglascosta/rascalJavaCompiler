@@ -5,19 +5,7 @@ import java.util.List;
 
 import core.LexerToken;
 import core.Terminal;
-import tipos.Bloco;
-import tipos.BlocoSub;
-import tipos.CmdAtrib;
-import tipos.CmdChamaFunc;
-import tipos.CmdExpArit;
-import tipos.CmdExpBin;
-import tipos.CmdIf;
-import tipos.CmdWhile;
-import tipos.Comando;
-import tipos.DecFunc;
-import tipos.DecProc;
-import tipos.DecVar;
-import tipos.TpDecVar;
+import tipos.*;
 
 public class NodeFactory {
 
@@ -84,6 +72,11 @@ public class NodeFactory {
 
     public Bloco buildBloco(List<DecVar> decVar, List<Comando> decSub, List<Comando> cmdComp){
         return new Bloco(decVar, decSub, cmdComp);
+    }
+
+    public Bloco setNomeDoPrograma(LexerToken nomeDoPrograma, Bloco bloco){
+        bloco.setNomeDoPrograma(nomeDoPrograma.getVal());
+        return bloco;
     }
 
     public BlocoSub buildBlocoSub(List<DecVar> decVar, List<Comando> cmdComp){

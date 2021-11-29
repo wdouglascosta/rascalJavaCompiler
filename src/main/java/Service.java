@@ -2,12 +2,12 @@ import jflex.SilentExit;
 
 public class Service {
 
-    private final String rootPath = System.getProperty("user.dir") + "/src/main/";
-    private final String genPath = rootPath + "generatedSources/";
-    private final String flexFilePath = rootPath + "resources/jflex/lexico.flex";
-    String cupFilePath = rootPath + "resources/sintatico.cup";
+    private static final String rootPath = System.getProperty("user.dir") + "/src/main/";
+    private static final String genPath = rootPath + "java/genSources/";
+    private static final String flexFilePath = rootPath + "resources/jflex/lexico.flex";
+    static String cupFilePath = rootPath + "resources/sintatico.cup";
 
-    public void generateLexer() throws SilentExit {
+    public static void generateLexer() throws SilentExit {
 
 
         String options = "-d";
@@ -16,12 +16,17 @@ public class Service {
         jflex.Main.generate(generateArgs);
     }
 
-    public void generateSyntatic() throws Exception {
-        String [] opts = {"-expect", "10000", "-package", "generatedSources", "-parser", "Sintatico", "-destdir", genPath, "-symbols", "sym",
+    public static void generateSyntatic() throws Exception {
+        String [] opts = {"-expect", "10000", "-package", "genSources", "-parser", "Sintatico", "-destdir", genPath, "-symbols", "sym",
                 "-interface", cupFilePath};
 
-        System.out.println("COMEÇANDO O CUP\n");
+        System.out.println("Gerando analisador sintático (CUP)\n");
 
         java_cup.Main.main(opts);
+    }
+
+    public static void main(String[] args) throws Exception {
+        generateSyntatic();
+        generateLexer();
     }
 }
