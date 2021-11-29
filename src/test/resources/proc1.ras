@@ -11,5 +11,6 @@ end
 begin
   k := 5;
   proc1(3, k);
+  proc1(10, k);
   write(k);
 end.

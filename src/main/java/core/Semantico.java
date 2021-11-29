@@ -83,9 +83,13 @@ public class Semantico {
         Map<String, VarTabSim> tabelaSimDecVar = processDecVar(decFunc.getBloco().getDecVar());
         Map<String, VarTabSim> tabSimDecParam = processDecVar(decFunc.getParams());
         Map<String, VarTabSim> tabSimbLocal = mergeTabSim(tabelaSimDecVar, tabSimDecParam);
+
+        int endRetorno = (tabSimDecParam.size() + 4) * -1;
+        VarType varType = getVarType(decFunc.getTipoRetorno());
+        tabSimbLocal.put(decFunc.getIdent().getVal(), new VarTabSim(varType, endRetorno));
         processCmdComp(decFunc.getBloco().getCmdComp(), tabSimbLocal);
 
-        FuncTabSim funcTabSim = new FuncTabSim(decFunc.getParams(), getVarType(decFunc.getTipoRetorno()), tabSimbLocal,
+        FuncTabSim funcTabSim = new FuncTabSim(decFunc.getParams(), varType, tabSimbLocal,
                 getNewSubLabel());
         interfaceSubs.put(decFunc.getIdent().getVal(), funcTabSim);
 
@@ -96,34 +100,29 @@ public class Semantico {
 
         Map<String, VarTabSim> toReturn = new HashMap<>();
 
-        for (Map.Entry<String, VarTabSim> entry : tabelaSimDecVar.entrySet()) {
-            if (tabSimDecParam.containsKey(entry.getKey())) {
-                System.err.println("A variável '" + entry.getKey() + "' já existe no escopo como um parâmetro");
-                errorCounter++;
+        if (tabelaSimDecVar != null){
+
+            for (Map.Entry<String, VarTabSim> entry : tabelaSimDecVar.entrySet()) {
+                if (tabSimDecParam.containsKey(entry.getKey())) {
+                    System.err.println("A variável '" + entry.getKey() + "' já existe no escopo como um parâmetro");
+                    errorCounter++;
+                }
+                toReturn.put(entry.getKey(), entry.getValue());
             }
-            toReturn.put(entry.getKey(), entry.getValue());
         }
 
-        for (Map.Entry<String, VarTabSim> entry : tabSimDecParam.entrySet()) {
-            int novoEnd = (entry.getValue().getEndereco() + 4) * -1;
-            entry.getValue().setEndereco(novoEnd);
+        if (tabSimDecParam != null){
 
-            toReturn.put(entry.getKey(), entry.getValue());
+            for (Map.Entry<String, VarTabSim> entry : tabSimDecParam.entrySet()) {
+                int novoEnd = (entry.getValue().getEndereco() + 4) * -1;
+                entry.getValue().setEndereco(novoEnd);
+
+                toReturn.put(entry.getKey(), entry.getValue());
+            }
         }
+        //
         return toReturn;
     }
-
-//    private void validateParams(List<DecVar> params) {
-//
-//        for (final DecVar decVar: params) {
-//            if(params.stream().filter(v -> v.getIdent().getVal().equals(decVar.getIdent().getVal())).count() > 1){
-//                System.err.println("Declaração de variáveis com o mesmo nome!");
-//                printLinha(decVar.getIdent());
-//                errorCounter++;
-//            }
-//        }
-//
-//    }
 
     private void processCmdComp(List<Comando> cmdComp, Map<String, VarTabSim> tabSimbolos) {
 
@@ -324,6 +323,9 @@ public class Semantico {
     private Map<String, VarTabSim> processDecVar(List<DecVar> lstDecVar) {
 
         Map<String, VarTabSim> tabSimbolos = new HashMap<>();
+        if (lstDecVar == null){
+            return tabSimbolos;
+        }
         Set<String> unique = new HashSet<>();
         Set<DecVar> duplicatedVars = new HashSet<>();
         Integer address = 0;

@@ -15,6 +15,7 @@ import tipos.CmdWhile;
 import tipos.Comando;
 import tipos.DecFunc;
 import tipos.DecProc;
+import tipos.TipoTabSim;
 import utils.ErroGeradorCodException;
 import utils.Utils;
 
@@ -71,13 +72,18 @@ public class GeradorCodMepa {
     public void generate(Bloco bloco) throws ErroGeradorCodException {
         // write INPP ... PARA
         sb.append(DTAB).append(INPP).append(LIN);
-        genDecVar(tabSimbolos);
+        if(!tabSimbolos.isEmpty()){
+            genDecVar(tabSimbolos);
+        }
         sb.append(DTAB);
         sb.append(DSVS).append(TAB).append("R00").append(LIN);
-
-        genDecSub(bloco.getDecSub());
+        if (bloco.getDecSub() != null){
+            genDecSub(bloco.getDecSub());
+        }
         sb.append("R00:").append(TAB).append(NADA).append(LIN);
-        genCmdComp(bloco.getCmdComp(), null);
+        if (bloco.getCmdComp() != null){
+            genCmdComp(bloco.getCmdComp(), null);
+        }
 
         sb.append(DTAB).append(DMEM).append(TAB).append(tabSimbolos.size()).append(LIN);
         sb.append(DTAB).append(PARA);
@@ -227,6 +233,7 @@ public class GeradorCodMepa {
                 break;
             case CHAMADA_FUNC:
                 genChamaFunc((CmdChamaFunc) cmd.getExpressao(), tabSim);
+                genARMZ(cmd.getVariavel(), tabSim);
 
         }
 
@@ -249,12 +256,22 @@ public class GeradorCodMepa {
             return;
         }
 
+        TabSimSub tabSimSub = interfaceSubs.get(cmdChamaFunc.getNomeFunc().getVal());
+
+        if(tabSimSub.getTipoSim() == TipoTabSim.FUNCAO){
+            sb.append(DTAB)
+                    .append(AMEM)
+                    .append(TAB)
+                    .append("1")
+                    .append(LIN);
+        }
         for(Comando cmd : cmdChamaFunc.getParams()){
             //empilha parâmetros
             genParamChamFunc(cmd, tabSim);
         }
-        String endereco = interfaceSubs.get(cmdChamaFunc.getNomeFunc().getVal()).getEndereco();
+        String endereco = tabSimSub.getEndereco();
         String k = tabSim == null ? "0" : "1"; //caso tabSim seja nulo, significa que a chamada vem do programa principal, senão, de um subprograma
+
         sb.append(DTAB)
                 .append(CHPR)
                 .append(TAB)
@@ -380,20 +397,18 @@ public class GeradorCodMepa {
     private void genDecFunc(DecFunc cmd) throws ErroGeradorCodException {
 
         FuncTabSim funcTabSim = (FuncTabSim) interfaceSubs.get(cmd.getIdent().getVal());
-        int amemSize = cmd.getBloco().getDecVar().size();
+        int amemSize = cmd.getBloco().getDecVar() == null ? 0 : cmd.getBloco().getDecVar().size();
         genHeadBlocoSub(cmd.getIdent().getVal(), amemSize);
-        sb.append("/ bloco sub: "+ cmd.getIdent().getVal()).append(LIN);
         genCmdComp(cmd.getBloco().getCmdComp(), funcTabSim.getTabSimbLocal());
-        genTailBlocoSub(amemSize);
+        genTailBlocoSub(amemSize, funcTabSim.getNumParams());
     }
 
     private void genDecProc(DecProc cmd) throws ErroGeradorCodException {
         ProcTabSim procTabSim = (ProcTabSim) interfaceSubs.get(cmd.getIdent().getVal());
         int amemSize = cmd.getBloco().getDecVar().size();
         genHeadBlocoSub(cmd.getIdent().getVal(), amemSize);
-        sb.append("/ bloco sub: "+ cmd.getIdent().getVal()).append(LIN);
         genCmdComp(cmd.getBloco().getCmdComp(), procTabSim.getTabSimbLocal());
-        genTailBlocoSub(amemSize);
+        genTailBlocoSub(amemSize, procTabSim.getNumParams());
     }
 
     private void genHeadBlocoSub(String nomeSub, Integer decVarSize) {
@@ -411,7 +426,7 @@ public class GeradorCodMepa {
 
     }
 
-    private void genTailBlocoSub(Integer decVarSize) {
+    private void genTailBlocoSub(Integer decVarSize, int desempilhaParams) {
 
         sb.append(DTAB)
                 .append(DMEM)
@@ -422,7 +437,7 @@ public class GeradorCodMepa {
         sb.append(DTAB)
                 .append(RTPR)
                 .append(TAB)
-                .append("1, 1")
+                .append("1, " + desempilhaParams)
                 .append(LIN);
     }
 

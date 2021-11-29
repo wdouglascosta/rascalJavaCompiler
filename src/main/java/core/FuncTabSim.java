@@ -25,6 +25,6 @@ public class FuncTabSim implements TabSimSub {
 
     public TipoTabSim getTipoSim() {
 
-        return TipoTabSim.PROCEDIMENTO;
+        return TipoTabSim.FUNCAO;
     }
 }
