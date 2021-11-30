@@ -77,4 +77,19 @@ public class test1 {
         System.out.println(generate.toString());
     }
 
+    @Test
+    public void teste5() throws Exception {
+        String sourceCode = System.getProperty("user.dir") + "/src/test/resources/";
+        System.out.println(sourceCode);
+        Sintatico sintatico = new Sintatico(new Lexico(new FileReader(sourceCode + "printEvenNum.ras")));
+        Semantico semantico = new Semantico();
+        Symbol parse = sintatico.parse();
+        Bloco value = (Bloco) parse.value;
+        TabSimbolos tabSimbolos = semantico.run(value);
+        GeradorCodMepa mepa = new GeradorCodMepa(tabSimbolos);
+        String json = mapper.writeValueAsString(value);
+        StringBuilder generate = mepa.generate(value);
+
+        System.out.println(generate.toString());
+    }
 }

@@ -1,18 +1,23 @@
-program funcaoSimples;
-  var x, k: integer;
+program funcaoVerificaSeEPar;
+  var x, y: integer;
 
-  function fun1(a: integer, b: integer): integer;
-  var g, h, j: integer;
+  function isPar(a: integer): integer;
+  var aux: integer;
   begin
-    fun1 := a + b;
+    aux := a div 2;
+    aux := aux * 2;
+    if aux < a then
+      begin
+        isPar := 0;
+      end
+    else
+      begin
+        isPar := 1;
+      end
   end
 
 begin
-  x := fun1(5, 10);
-  if x < 5 then
-    begin
-      write(x);
-    end
-  k := 0;
-  fun1(1, x);
+read(x);
+y := isPar(x);
+write(y);
 end.

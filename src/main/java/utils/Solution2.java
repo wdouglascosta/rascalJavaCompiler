@@ -1,16 +1,29 @@
-//package utils;
-//public class Solution2 {
-//
-//    public static void main(String[] args) {
-//        int x = 100;
-//        int i = 1;
-//        int result = 0;
-//        if(x <= 100){
-//            while(x >= i){
-//                result = result + i;
-//                i++;
-//            }
-//        }
-//        System.out.println(result);
-//    }
-//}
+package utils;
+public class Solution2 {
+
+    public static void main(String[] args) {
+        int in = 100;
+        printevenNum(in);
+    }
+
+    private static void printevenNum(int in) {
+
+        if(isEven(in)){
+            System.out.println(in);
+        }
+        if(in > 0){
+            printevenNum(in - 1);
+        }
+    }
+
+    private static boolean isEven(int in) {
+        int aux = in / 2;
+        aux = aux * 2;
+        if(in == aux){
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+}

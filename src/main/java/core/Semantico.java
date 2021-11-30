@@ -68,6 +68,9 @@ public class Semantico {
     }
 
     private void validateDecProc(DecProc decProc) {
+        ProcTabSim preProcTabSim = new ProcTabSim(decProc.getParams(), null, getNewSubLabel());
+        interfaceSubs.put(decProc.getIdent().getVal(), preProcTabSim);
+        // caso haja chamada recursiva, é necessário que ela esteja previamente "declarada" na tabela de simbolos
 
         Map<String, VarTabSim> tabelaSimDecVar = processDecVar(decProc.getBloco().getDecVar());
         Map<String, VarTabSim> tabSimDecParam = processDecVar(decProc.getParams());
@@ -79,6 +82,10 @@ public class Semantico {
     }
 
     private void validateDecFunc(DecFunc decFunc) {
+
+        ProcTabSim preFuncTabSim = new ProcTabSim(decFunc.getParams(), null, getNewSubLabel());
+        interfaceSubs.put(decFunc.getIdent().getVal(), preFuncTabSim);
+        // caso haja chamada recursiva, é necessário que ela esteja previamente "declarada" na tabela de simbolos
 
         Map<String, VarTabSim> tabelaSimDecVar = processDecVar(decFunc.getBloco().getDecVar());
         Map<String, VarTabSim> tabSimDecParam = processDecVar(decFunc.getParams());
@@ -192,7 +199,7 @@ public class Semantico {
 
             validateIOFunc(cmd, tabSimbolos);
         } else {
-            if (!interfaceSubs.containsKey(cmd.getNomeFunc().getVal())) {
+            if (isNotDeclaredSub(cmd)) {
                 System.err.println("Função ou procedimento '" + cmd.getNomeFunc().getVal() + "' não declarado");
                 printLinha(cmd.getNomeFunc());
                 errorCounter++;
@@ -212,6 +219,11 @@ public class Semantico {
             validateParams(tabSimbolos, cmd.getParams());
         }
 
+    }
+
+    private boolean isNotDeclaredSub(CmdChamaFunc cmd) {
+
+        return !interfaceSubs.containsKey(cmd.getNomeFunc().getVal()) ;
     }
 
     private void validateIOFunc(CmdChamaFunc cmd, Map<String, VarTabSim> tabSimbolos) {

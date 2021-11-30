@@ -80,7 +80,7 @@ public class GeradorCodMepa {
         if (bloco.getDecSub() != null){
             genDecSub(bloco.getDecSub());
         }
-        sb.append("R0:").append(TAB).append(NADA).append(LIN);
+        sb.append("R0:").append(DTAB).append(NADA).append(LIN);
         if (bloco.getCmdComp() != null){
             genCmdComp(bloco.getCmdComp(), null);
         }
