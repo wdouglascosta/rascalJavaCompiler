@@ -1,0 +1,37 @@
+program prova4;
+  var x: integer;
+
+  function isPar(a: integer): integer;
+  var aux: integer;
+  begin
+    aux := a div 2;
+    aux := aux * 2;
+    if aux < a then
+      begin
+        isPar := 0;
+      end
+    else
+      begin
+        isPar := 1;
+      end
+  end
+
+procedure printEven(in: integer);
+var cond, aux: integer;
+begin
+  cond := isPar(in);
+  if (cond = 1) then
+  begin
+    write(in);
+  end
+  if in > 0 then
+  begin
+    aux := in - 1;
+    printEven(aux);
+  end
+end
+
+begin
+read(x);
+printEven(x);
+end.

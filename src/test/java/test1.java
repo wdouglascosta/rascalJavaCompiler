@@ -18,70 +18,47 @@ public class test1 {
 
     @Test
     public void teste1() throws Exception {
-        String sourceCode = System.getProperty("user.dir") + "/src/test/resources/";
-        System.out.println(sourceCode);
-        Sintatico sintatico = new Sintatico(new Lexico(new FileReader(sourceCode + "while3.ras")));
-        Semantico semantico = new Semantico();
-        Symbol parse = sintatico.parse();
-        Bloco value = (Bloco) parse.value;
-        TabSimbolos tabSimbolos = semantico.run(value);
-        GeradorCodMepa mepa = new GeradorCodMepa(tabSimbolos);
-        String json = mapper.writeValueAsString(value);
-        mepa.generate(value);
-        System.out.println(value);
+        baseTest("prova1.ras");
+
     }
 
     @Test
     public void teste2() throws Exception {
-        String sourceCode = System.getProperty("user.dir") + "/src/test/resources/";
-        System.out.println(sourceCode);
-        Sintatico sintatico = new Sintatico(new Lexico(new FileReader(sourceCode + "proc1.ras")));
-        Semantico semantico = new Semantico();
-        Symbol parse = sintatico.parse();
-        Bloco value = (Bloco) parse.value;
-        TabSimbolos tabSimbolos = semantico.run(value);
-        GeradorCodMepa mepa = new GeradorCodMepa(tabSimbolos);
-        String json = mapper.writeValueAsString(value);
-        mepa.generate(value);
-        System.out.println(value);
+
+        baseTest("proc1.ras");
+
     }
 
     @Test
     public void teste3() throws Exception {
-        String sourceCode = System.getProperty("user.dir") + "/src/test/resources/";
-        System.out.println(sourceCode);
-        Sintatico sintatico = new Sintatico(new Lexico(new FileReader(sourceCode + "funcao1.ras")));
-        Semantico semantico = new Semantico();
-        Symbol parse = sintatico.parse();
-        Bloco value = (Bloco) parse.value;
-        TabSimbolos tabSimbolos = semantico.run(value);
-        GeradorCodMepa mepa = new GeradorCodMepa(tabSimbolos);
-        String json = mapper.writeValueAsString(value);
-        mepa.generate(value);
-        System.out.println(value);
+
+        baseTest("funcao1.ras");
+
     }
 
     @Test
     public void teste4() throws Exception {
-        String sourceCode = System.getProperty("user.dir") + "/src/test/resources/";
-        System.out.println(sourceCode);
-        Sintatico sintatico = new Sintatico(new Lexico(new FileReader(sourceCode + "funcPar.ras")));
-        Semantico semantico = new Semantico();
-        Symbol parse = sintatico.parse();
-        Bloco value = (Bloco) parse.value;
-        TabSimbolos tabSimbolos = semantico.run(value);
-        GeradorCodMepa mepa = new GeradorCodMepa(tabSimbolos);
-        String json = mapper.writeValueAsString(value);
-        StringBuilder generate = mepa.generate(value);
 
-        System.out.println(generate.toString());
+        baseTest("prova3.ras");
     }
 
     @Test
     public void teste5() throws Exception {
+
+        baseTest("prova4.ras");
+    }
+
+    @Test
+    public void teste6() throws Exception {
+
+        baseTest("prova2.ras");
+    }
+
+    private void baseTest(String s) throws Exception {
+
         String sourceCode = System.getProperty("user.dir") + "/src/test/resources/";
         System.out.println(sourceCode);
-        Sintatico sintatico = new Sintatico(new Lexico(new FileReader(sourceCode + "printEvenNum.ras")));
+        Sintatico sintatico = new Sintatico(new Lexico(new FileReader(sourceCode + s)));
         Semantico semantico = new Semantico();
         Symbol parse = sintatico.parse();
         Bloco value = (Bloco) parse.value;

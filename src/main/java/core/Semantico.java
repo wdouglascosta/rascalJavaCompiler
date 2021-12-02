@@ -68,7 +68,7 @@ public class Semantico {
     }
 
     private void validateDecProc(DecProc decProc) {
-        ProcTabSim preProcTabSim = new ProcTabSim(decProc.getParams(), null, getNewSubLabel());
+        ProcTabSim preProcTabSim = new ProcTabSim(decProc.getParams(), null, null);
         interfaceSubs.put(decProc.getIdent().getVal(), preProcTabSim);
         // caso haja chamada recursiva, é necessário que ela esteja previamente "declarada" na tabela de simbolos
 
@@ -83,7 +83,7 @@ public class Semantico {
 
     private void validateDecFunc(DecFunc decFunc) {
 
-        ProcTabSim preFuncTabSim = new ProcTabSim(decFunc.getParams(), null, getNewSubLabel());
+        ProcTabSim preFuncTabSim = new ProcTabSim(decFunc.getParams(), null,null);
         interfaceSubs.put(decFunc.getIdent().getVal(), preFuncTabSim);
         // caso haja chamada recursiva, é necessário que ela esteja previamente "declarada" na tabela de simbolos
 

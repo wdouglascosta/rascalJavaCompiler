@@ -1,0 +1,22 @@
+program prova2;
+
+var x: integer;
+
+procedure fat(a: integer);
+  var result:integer;
+  begin
+    result := 1;
+    while(a > 1) do
+      begin
+          result := result * a;
+          a := a - 1;
+      end
+      write(result);
+  end
+
+begin
+  read(x);
+  fat(x);
+end.
+
+

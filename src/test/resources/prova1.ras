@@ -3,7 +3,6 @@ program prog1;
 var x, i, result: integer;
 
 begin
- 
     read(x);
     i := 1;
     if(x <= 100) then

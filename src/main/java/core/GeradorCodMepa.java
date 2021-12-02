@@ -65,7 +65,6 @@ public class GeradorCodMepa {
 
         this.tabSimbolos = tabSimbolos.getTabelaSimbolosGlobal();
         this.interfaceSubs = tabSimbolos.getInterfaceSubs();
-//        this.labelCounter = this.interfaceSubs.size() + 1;
     }
 
     StringBuilder sb = new StringBuilder();
@@ -235,7 +234,6 @@ public class GeradorCodMepa {
             case CHAMADA_FUNC:
                 genChamaFunc((CmdChamaFunc) cmd.getExpressao(), tabSim);
                 genARMZ(cmd.getVariavel(), tabSim);
-
         }
 
     }
