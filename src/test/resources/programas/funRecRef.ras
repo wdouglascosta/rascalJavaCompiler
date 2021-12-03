@@ -1,0 +1,25 @@
+program funcaoRecursivaRef;
+  var  m, q, w, e: integer;
+
+  function f(n: integer, k: integer): integer;
+    var p, q: integer;
+  begin
+    if n<2 then
+      begin
+        f:=n;
+        k:=0;
+      end
+    else
+      begin
+        q := f(n-1, p);
+        w := f(n-2, q);
+        f := q + w;
+        k := p+q+1;
+      end
+    write(n,k);
+  end
+
+begin
+   e := f(3,m);
+   write(e, m);
+end.

@@ -173,7 +173,8 @@ lstParamFunc ::=
 ;
 
 decParamFunc ::=
-    T_IDENT:p1 T_DOIS_PONTOS tipo:p3 {: RESULT = factory.buildParamDecVar(p1, p3); :}
+
+    | T_IDENT:p1 T_DOIS_PONTOS tipo:p3 {: RESULT = factory.buildParamDecVar(p1, p3); :}
 ;
 
 comando_composto ::=
@@ -253,7 +254,8 @@ lstParams ::=
 ;
 
 paramFunc ::=
-      paramArit:p1     {: RESULT = p1; :}
+
+    | paramArit:p1     {: RESULT = p1; :}
     | T_IDENT:p1        {: RESULT = p1; :}
     | T_NUM:p1          {: RESULT = p1; :}
 ;

@@ -1,0 +1,33 @@
+program funcaoSimples;
+  var n: integer;
+
+
+  function divisivel(a: integer, b: integer): boolean;
+  begin
+    while (a > 0) do
+      begin
+        a := a - b;
+      end
+    divisivel := (a = 0);
+  end;
+
+
+  function primo(n: integer): boolean;
+    var i, x: integer;
+        p: boolean;
+  begin
+    p := true;
+    i := 2;
+    while (i <= n div 2) and p do
+    begin
+      if divisivel(n, i) then
+        p := false;
+      i := i + 1;
+    end;
+    primo := p;
+  end;
+
+begin
+  read(n);
+  write(primo(n));
+end.

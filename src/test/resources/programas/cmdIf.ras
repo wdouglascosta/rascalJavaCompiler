@@ -1,0 +1,15 @@
+program cmdIf;
+
+  var x, y: integer;
+
+begin
+  read(x, y);
+  if x <= y then
+    begin
+        write(x + y);
+    end
+  else
+    begin
+        write(x * y);
+    end
+end.

@@ -2,6 +2,8 @@ package core;
 
 import static tipos.TipoCmd.FINAL;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -63,7 +65,7 @@ public class GeradorCodMepa {
 
     public GeradorCodMepa(TabSimbolos tabSimbolos) {
 
-        this.tabSimbolos = tabSimbolos.getTabelaSimbolosGlobal();
+        this.tabSimbolos = tabSimbolos.getTabelaSimbolosGlobal() == null ? new HashMap<>() : tabSimbolos.getTabelaSimbolosGlobal();
         this.interfaceSubs = tabSimbolos.getInterfaceSubs();
     }
 
@@ -264,9 +266,11 @@ public class GeradorCodMepa {
                     .append("1")
                     .append(LIN);
         }
-        for(Comando cmd : cmdChamaFunc.getParams()){
-            //empilha parâmetros
-            genParamChamFunc(cmd, tabSim);
+        if(cmdChamaFunc.getParams() != null){
+            for(Comando cmd : cmdChamaFunc.getParams()){
+                //empilha parâmetros
+                genParamChamFunc(cmd, tabSim);
+            }
         }
         String endereco = tabSimSub.getEndereco();
         String k = tabSim == null ? "0" : "1"; //caso tabSim seja nulo, significa que a chamada vem do programa principal, senão, de um subprograma

@@ -1,0 +1,10 @@
+program decl_variaveis;
+
+  var x, y, z: integer;
+      a,b,c:boolean;
+
+begin
+
+  write(42);
+
+end.

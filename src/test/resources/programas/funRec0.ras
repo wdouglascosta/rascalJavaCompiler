@@ -1,0 +1,19 @@
+program funcaoRecursiva;
+  var q, w: integer;
+  function f(n: integer): integer;
+  begin
+    if n < 2 then
+      begin
+        f := 1
+      end
+    else
+      begin
+        q := f(n-1);
+        f := n * q;
+      end
+  end
+
+begin
+  w := f(5);
+  write(w);
+end.

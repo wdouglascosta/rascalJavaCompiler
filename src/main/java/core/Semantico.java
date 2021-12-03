@@ -28,10 +28,10 @@ public class Semantico {
     private int errorCounter = 0;
     private int enderecoSubCounter = 1;
     private Map<String, TabSimSub> interfaceSubs = new HashMap<>();
-
+    Map<String, VarTabSim> tabelaSimbolosGlobal = null;
     public TabSimbolos run(Bloco program) throws ErroSemanticoException {
 
-        Map<String, VarTabSim> tabelaSimbolosGlobal = null;
+
         if (program.getDecVar() != null) {
             tabelaSimbolosGlobal = processDecVar(program.getDecVar());
         }
@@ -207,7 +207,8 @@ public class Semantico {
             }
             TabSimSub tabSimSub = interfaceSubs.get(cmd.getNomeFunc().getVal());
 
-            if (cmd.getParams().size() != tabSimSub.getNumParams()) {
+            int numParams = cmd.getParams() == null ? 0 : cmd.getParams().size();
+            if (numParams != tabSimSub.getNumParams()) {
                 System.err.println(
                         "Chamada de '" + tabSimSub.getTipoSim() + "' com número inválido de parâmetros '" + cmd
                                 .getNomeFunc().getVal() + "' (esperado(s): " + tabSimSub.getNumParams()
@@ -215,8 +216,9 @@ public class Semantico {
                 printLinha(cmd.getNomeFunc());
                 errorCounter++;
             }
-
-            validateParams(tabSimbolos, cmd.getParams());
+            if(numParams > 0){
+                validateParams(tabSimbolos, cmd.getParams());
+            }
         }
 
     }
@@ -315,22 +317,35 @@ public class Semantico {
 
     private void checkIntVar(LexerToken token, Map<String, VarTabSim> tabSimbolos) {
 
-        if (checkVarExists(token, tabSimbolos) && tabSimbolos.get(token.getVal()).getTipo() != VarType.INTEGER) {
-            System.err.println("A variavel '" + token.getVal() + "' não aceita operações aritméticas");
-            printLinha(token);
-            errorCounter++;
+        VarTabSim varTabSim = checkVarExists(token, tabSimbolos);
+        if (varTabSim != null){
+
+            if (varTabSim.getTipo() != VarType.INTEGER) {
+                System.err.println("A variavel '" + token.getVal() + "' não aceita operações aritméticas");
+                printLinha(token);
+                errorCounter++;
+            }
         }
     }
 
-    private Boolean checkVarExists(LexerToken token, Map<String, VarTabSim> tabSimbolos) {
+    private VarTabSim checkVarExists(LexerToken token, Map<String, VarTabSim> tabSimbolosLocal) {
         //TODO adicionar checagem para escopo global
-        if (!tabSimbolos.containsKey(token.getVal())) {
+        if (!tabSimbolosLocal.containsKey(token.getVal()) && !tabelaSimbolosGlobal.containsKey(token.getVal()) ) {
             System.err.println("Variável '" + token.getVal() + "' não foi declarada no escopo");
             printLinha(token);
             errorCounter++;
-            return false;
+            return null;
         }
-        return true;
+        VarTabSim varTabSimGlobal = tabelaSimbolosGlobal.get(token.getVal());
+        VarTabSim varTabSimLocal = tabSimbolosLocal.get(token.getVal());
+
+//        if (varTabSimLocal != null && varTabSimGlobal != null){
+//            System.err.println("Variável '" + token.getVal() + "' foi declarada em um escopo local e em um escopo global");
+//            printLinha(token);
+//            errorCounter++;
+//            return null;
+//        }
+        return varTabSimGlobal == null ? varTabSimLocal : varTabSimGlobal;
     }
 
     private Map<String, VarTabSim> processDecVar(List<DecVar> lstDecVar) {
@@ -344,6 +359,7 @@ public class Semantico {
         Integer address = 0;
         for (DecVar var : lstDecVar) {
             //check duplicated name declarations
+
             if (!unique.add(var.getIdent().getVal())) {
                 duplicatedVars.add(var);
             }

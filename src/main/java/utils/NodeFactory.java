@@ -41,6 +41,9 @@ public class NodeFactory {
     }
 
     public List<DecVar> buildLstParam(List<DecVar> list, DecVar decVar){
+        if(decVar == null){
+            return null;
+        }
         if (list == null){
             list = new ArrayList();
         }
@@ -93,6 +96,9 @@ public class NodeFactory {
     }
 
     public List<Comando> buildLstComandos(List<Comando> list, Comando cmd){
+        if(cmd == null){
+            return null;
+        }
         if (list == null){
             list = new ArrayList();
         }

@@ -19,7 +19,7 @@ public class ProcTabSim implements TabSimSub {
     private String endereco;
 
     public Integer getNumParams(){
-        return params.size();
+        return params == null ? 0 : params.size();
     }
 
     public TipoTabSim getTipoSim() {
