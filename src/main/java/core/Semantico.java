@@ -276,11 +276,7 @@ public class Semantico {
     private void validateAtribuicao(CmdAtrib cmd, Map<String, VarTabSim> tabSimbolos) {
 
         LexerToken variavel = cmd.getVariavel();
-//        if(isAnInteger(variavel)){
-//            System.err.println("'" + variavel.getVal() +"' Não é uma váriável válida");
-//            printLinha(variavel);
-//            errorCounter++;
-//        }
+
         checkIntVar(variavel, tabSimbolos);
         Comando expressao = cmd.getExpressao();
 
@@ -329,7 +325,7 @@ public class Semantico {
     }
 
     private VarTabSim checkVarExists(LexerToken token, Map<String, VarTabSim> tabSimbolosLocal) {
-        //TODO adicionar checagem para escopo global
+
         if (!tabSimbolosLocal.containsKey(token.getVal()) && !tabelaSimbolosGlobal.containsKey(token.getVal()) ) {
             System.err.println("Variável '" + token.getVal() + "' não foi declarada no escopo");
             printLinha(token);
@@ -339,12 +335,6 @@ public class Semantico {
         VarTabSim varTabSimGlobal = tabelaSimbolosGlobal.get(token.getVal());
         VarTabSim varTabSimLocal = tabSimbolosLocal.get(token.getVal());
 
-//        if (varTabSimLocal != null && varTabSimGlobal != null){
-//            System.err.println("Variável '" + token.getVal() + "' foi declarada em um escopo local e em um escopo global");
-//            printLinha(token);
-//            errorCounter++;
-//            return null;
-//        }
         return varTabSimGlobal == null ? varTabSimLocal : varTabSimGlobal;
     }
 

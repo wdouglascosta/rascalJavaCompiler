@@ -43,6 +43,7 @@ public class Main {
         Semantico semantico = new Semantico();
         Symbol parse = sintatico.parse();
         Bloco value = (Bloco) parse.value;
+
         String nomeDoPrograma = value.getNomeDoPrograma();
         TabSimbolos tabSimbolos = semantico.run(value);
         GeradorCodMepa mepa = new GeradorCodMepa(tabSimbolos);
